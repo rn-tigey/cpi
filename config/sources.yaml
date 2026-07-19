@@ -35,7 +35,8 @@ rss:
 funding:
   cadence: monthly
   feeds:
-    - name: "FinSMEs USA"
-      url: "https://www.finsmes.com/category/usa/feed"
+    # (FinSMEs was the previous default but now blocks non-browser clients with 403)
+    - name: "Crunchbase News"
+      url: "https://news.crunchbase.com/feed/"
       source_class: funding
-    # add Crunchbase-news / TechCrunch category feeds here if desired
+    # add TechCrunch category feeds (e.g. /category/fintech/feed/) here if desired

@@ -144,11 +144,12 @@ def _canned_json(task: str, vars: dict) -> dict:
                 "claimed_significance": "Dry-run significance."}
     if task == "ground":
         names = [n for n in str(vars.get("theme_names", "")).splitlines() if n.strip()]
-        return {"themes": [
-            {"theme": n,
-             "arxiv_queries": [f"{n.lower()} methods"],
-             "hn_keywords": [n.lower().split()[0]],
-             "press_keywords": [n.lower()]}
-            for n in names
-        ]}
+        kw_rows = str(vars.get("theme_keywords", "")).splitlines()
+        themes = []
+        for i, n in enumerate(names):
+            kws = [k for k in (kw_rows[i].split("|") if i < len(kw_rows) else []) if k]
+            kws = kws or [n.lower()]  # theme has no PCM keywords - use its name
+            themes.append({"theme": n, "arxiv_queries": kws[:4],
+                           "hn_keywords": [kws[0]], "press_keywords": kws[:6]})
+        return {"themes": themes}
     return {}
