@@ -23,7 +23,9 @@ def init(dest: Path = typer.Option(..., help="Folder to initialize for a new pro
     src = paths.home()
     dest.mkdir(parents=True, exist_ok=True)
     for sub in ("config", "prompts"):
-        shutil.copytree(src / sub, dest / sub, dirs_exist_ok=True)
+        # search.yaml is generated per-product by `cpi ground` - never seed it
+        shutil.copytree(src / sub, dest / sub, dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns("search.yaml"))
     (dest / "context").mkdir(exist_ok=True)
     shutil.copy(src / "context" / "pcm.template.yaml", dest / "context" / "pcm.template.yaml")
     target_pcm = dest / "context" / "pcm.yaml"
@@ -35,6 +37,16 @@ def init(dest: Path = typer.Option(..., help="Folder to initialize for a new pro
     typer.echo(f"Initialized CPI home at {dest}")
     typer.echo(f"1) Edit {target_pcm} for the new product")
     typer.echo(f"2) Run with: set CPI_HOME={dest} (or export CPI_HOME={dest})")
+
+
+@app.command()
+def ground(force: bool = typer.Option(False, help="Overwrite an existing config/search.yaml")):
+    """Stage 1 - translate the PCM into per-source search criteria (config/search.yaml)."""
+    from .pipeline import ground as ground_mod
+
+    path = ground_mod.run(force=force)
+    typer.echo(f"Search criteria written: {path}")
+    typer.echo("Review/edit that file, then run: cpi scan")
 
 
 @app.command()

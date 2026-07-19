@@ -45,6 +45,17 @@ Copy nothing, guess nothing — this is the step that determines signal quality.
 3. Record the initial version in `$CPI_HOME/context/pcm_changelog.md`.
 4. Edit `$CPI_HOME/config/sources.yaml`: replace the starter RSS/funding feeds with the
    analyst blogs, competitor changelogs, and funding feeds for *your* market.
+5. Generate the search criteria:
+
+   ```bash
+   cpi ground     # writes $CPI_HOME/config/search.yaml
+   ```
+
+   This translates each watch theme into the vocabulary each channel actually uses (academic
+   phrasing for arXiv, developer phrasing for HN, product-category phrasing for press) and adds
+   a standard set built from your competitor names. Review and edit the file — it is config,
+   not magic. Without it, scanners fall back to your raw PCM keywords, which are usually too
+   academic to match headlines. Re-run with `--force` after significant PCM edits.
 
 ## 4. Run the loop
 
@@ -82,9 +93,11 @@ step. Hold a 45-minute review, and record a fund/park/kill decision for every id
 
 ## Troubleshooting
 
-- **`cpi scan` finds nothing** — check your PCM watch themes have concrete `keywords` and
-  valid `arxiv_categories`, and that `sources.yaml` feeds resolve. HN ignores stories under
-  `min_points`.
+- **`cpi scan` finds nothing** — run `cpi ground` if you haven't (raw PCM keywords rarely
+  match channel vocabulary), check watch themes have valid `arxiv_categories`, and confirm
+  `sources.yaml` feeds resolve. HN ignores stories under `min_points`. arXiv's
+  `lookback_days` must cover the gap since your last scan — 7 days of lookback on a monthly
+  cadence misses three weeks of papers.
 - **Triage advances too much/too little** — sharpen the PCM: non-goals discard, watch themes
   advance. Vague entries produce vague triage.
 - **No API key handy** — `CPI_DRY_RUN=1` exercises every command with deterministic canned

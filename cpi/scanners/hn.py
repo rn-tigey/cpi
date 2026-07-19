@@ -20,9 +20,14 @@ def scan(pcm, config: dict, use_llm: bool = True) -> list[SignalRecord]:
     min_points = cfg.get("min_points", 10)
     since = int(time.mktime((datetime.now() - timedelta(days=lookback)).timetuple()))
 
+    criteria = store.load_search_criteria()
     keywords: list[str] = list(cfg.get("extra_keywords", []))
+    if criteria is not None:
+        keywords.extend(criteria.standard_keywords)  # competitor names et al.
     for theme in pcm.watch_themes:
-        keywords.extend(theme.keywords[:2])
+        ts = criteria.for_theme(theme.name) if criteria else None
+        # HN search wants community vocabulary, not the PCM's academic phrasing
+        keywords.extend(ts.hn_keywords[:3] if ts and ts.hn_keywords else theme.keywords[:2])
 
     records: list[SignalRecord] = []
     for kw in dict.fromkeys(keywords):  # preserve order, dedupe
@@ -49,6 +54,7 @@ def scan(pcm, config: dict, use_llm: bool = True) -> list[SignalRecord]:
                 url=url, title=title,
                 raw_excerpt=f"{excerpt}\n[{hit.get('points', 0)} points, {hit.get('num_comments', 0)} comments: {comment_url}]",
                 published=created, themes=pcm.watch_themes, use_llm=use_llm,
+                criteria=criteria,
             )
             if rec:
                 store.save_signal(rec)
