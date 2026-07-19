@@ -7,7 +7,7 @@ configure, then the loop runs on a daily/weekly/monthly cadence. Concepts are de
 ## 1. Install
 
 ```bash
-git clone <repo-url> && cd cpi
+git clone https://github.com/rn-tigey/cpi.git && cd cpi
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 pytest   # sanity check — runs keyless and offline

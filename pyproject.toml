@@ -13,7 +13,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
-    { name = "Ramana Nallajarla" },
+    { name = "Ramana Nallajarla", email = "ramana.nallajarla@gmail.com" },
 ]
 keywords = [
     "product-management",
@@ -44,8 +44,8 @@ dependencies = [
 dev = ["pytest>=8.0", "ruff>=0.6"]
 
 [project.urls]
-Homepage = "https://github.com/OWNER/cpi"
-Issues = "https://github.com/OWNER/cpi/issues"
+Homepage = "https://github.com/rn-tigey/cpi"
+Issues = "https://github.com/rn-tigey/cpi/issues"
 
 [project.scripts]
 cpi = "cpi.cli:app"
