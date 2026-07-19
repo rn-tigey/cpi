@@ -22,7 +22,7 @@ Install from source (a wheel install would not carry the `context/`, `config/`, 
 template folders that `cpi init` copies — packaging them via `importlib.resources` is future work):
 
 ```bash
-git clone <repo-url> && cd cpi
+git clone https://github.com/rn-tigey/cpi.git && cd cpi
 pip install -e ".[dev]"
 
 # LLM access:

@@ -13,7 +13,7 @@ the config surface instead.
 ## Dev setup
 
 ```bash
-git clone <repo-url> && cd cpi
+git clone https://github.com/rn-tigey/cpi.git && cd cpi
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 ```
