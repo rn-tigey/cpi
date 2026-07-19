@@ -1,0 +1,78 @@
+"""Shared scanner machinery: normalization, dedupe, rate limiting, LLM summaries."""
+
+from __future__ import annotations
+
+import json
+import time
+from datetime import date, datetime
+
+from .. import llm, store
+from ..models import SignalRecord, SourceClass
+
+# Above this size we consider an item "long-form" and pay one Haiku call for a
+# proper summary; below it, a deterministic truncation is good enough.
+LONGFORM_CHARS = 1200
+REQUEST_DELAY_S = 1.0  # polite spacing between HTTP requests within a scanner
+
+
+def polite_sleep() -> None:
+    time.sleep(REQUEST_DELAY_S)
+
+
+def parse_date(value) -> date | None:
+    if not value:
+        return None
+    if isinstance(value, date):
+        return value
+    if isinstance(value, time.struct_time):
+        return date(*value[:3])
+    for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", "%a, %d %b %Y %H:%M:%S"):
+        try:
+            return datetime.strptime(str(value)[: len(fmt) + 2].strip(), fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def theme_hints(text: str, themes: list) -> list[str]:
+    """Cheap keyword-overlap hints; the triage LLM does the real judgment."""
+    lowered = text.lower()
+    hits = []
+    for t in themes:
+        if any(kw.lower() in lowered for kw in t.keywords) or t.name.lower() in lowered:
+            hits.append(t.name)
+    return hits
+
+
+def summarize(rec: SignalRecord, use_llm: bool = True) -> SignalRecord:
+    """Fill summary/claimed_significance - via Haiku for long-form, else truncation."""
+    excerpt = (rec.raw_excerpt or "").strip()
+    if use_llm and len(excerpt) >= LONGFORM_CHARS:
+        try:
+            out = llm.complete("summarize", source_name=rec.source_name,
+                               source_class=rec.source_class.value, title=rec.title,
+                               url=rec.url, raw_excerpt=excerpt[:6000])
+            data = json.loads(out) if out.strip().startswith("{") else {}
+            rec.summary = data.get("summary") or excerpt[:400]
+            rec.claimed_significance = data.get("claimed_significance", "")
+            return rec
+        except Exception:
+            pass  # fall through to truncation - a scan must never die on one item
+    rec.summary = rec.summary or excerpt[:400] or rec.title
+    return rec
+
+
+def build_record(*, source_class: SourceClass, source_name: str, url: str,
+                 title: str, raw_excerpt: str, published, themes: list,
+                 use_llm: bool = True) -> SignalRecord | None:
+    """Normalize one collected item into a SignalRecord; None if already seen."""
+    sid = SignalRecord.make_id(url)
+    if sid in store.load_seen():
+        return None
+    rec = SignalRecord(
+        id=sid, source_class=source_class, source_name=source_name, url=url,
+        published_date=parse_date(published), collected_date=date.today(),
+        title=title.strip(), raw_excerpt=(raw_excerpt or "").strip()[:8000],
+        watch_theme_hints=theme_hints(f"{title} {raw_excerpt}", themes),
+    )
+    return summarize(rec, use_llm=use_llm)

@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.venv/
+venv/
+
+# Secrets — never commit keys
+.env
+
+# Runtime state: a repo-root dev run uses this tree as CPI_HOME,
+# so signals, briefs, and your real PCM would otherwise land here.
+data/*
+!data/.gitkeep
+briefs/*
+!briefs/.gitkeep
+*.jsonl
+context/pcm.yaml
+
+# Authored PDFs stay out of the repo (published docs live in docs/ as markdown)
+*.pdf
