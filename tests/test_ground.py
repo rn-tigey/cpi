@@ -37,24 +37,24 @@ def test_ground_refuses_silent_overwrite(cpi_home):
 
 
 def test_theme_hints_match_translated_vocabulary(cpi_home):
-    theme = WatchTheme(name="Uncertainty quantification", rationale="test",
-                       keywords=["adaptive conformal inference"])
+    theme = WatchTheme(name="Data-quality monitoring", rationale="test",
+                       keywords=["statistical process control for pipelines"])
     criteria = SearchCriteria(themes=[ThemeSearch(
-        theme="Uncertainty quantification",
-        press_keywords=["confidence intervals", "model uncertainty"],
+        theme="Data-quality monitoring",
+        press_keywords=["data downtime", "pipeline observability"],
     )])
-    text = "Startup ships model uncertainty dashboards for ML teams"
+    text = "Startup ships data downtime dashboards for analytics teams"
     assert base.theme_hints(text, [theme]) == []  # PCM phrasing alone misses
     assert base.theme_hints(text, [theme], criteria=criteria) == [
-        "Uncertainty quantification"]
+        "Data-quality monitoring"]
 
 
 def test_arxiv_query_prefers_ground_phrases(cpi_home):
-    theme = WatchTheme(name="T", rationale="test", arxiv_categories=["cs.LG"],
+    theme = WatchTheme(name="T", rationale="test", arxiv_categories=["cs.DB"],
                        keywords=["our internal phrasing"])
-    ts = ThemeSearch(theme="T", arxiv_queries=["distribution shift", "domain adaptation"])
+    ts = ThemeSearch(theme="T", arxiv_queries=["data lineage", "schema evolution"])
     q = arxiv._query_for_theme(theme, ts)
-    assert 'all:"distribution shift"' in q and "cat:cs.LG" in q
+    assert 'all:"data lineage"' in q and "cat:cs.DB" in q
     assert "internal phrasing" not in q
     # without criteria the PCM keywords still work (fallback)
     assert 'all:"our internal phrasing"' in arxiv._query_for_theme(theme, None)
