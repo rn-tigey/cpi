@@ -19,6 +19,15 @@ def polite_sleep() -> None:
     time.sleep(REQUEST_DELAY_S)
 
 
+def log_scan(source_name: str, fetched: int, new: int, error: str | None = None) -> None:
+    """One row per source per scan run - feeds the health table in `cpi status`."""
+    from .. import paths
+
+    store.append_jsonl(paths.scan_log_file(), {
+        "source": source_name, "fetched": fetched, "new": new, "error": error,
+    })
+
+
 def parse_date(value) -> date | None:
     if not value:
         return None
@@ -72,15 +81,24 @@ def summarize(rec: SignalRecord, use_llm: bool = True) -> SignalRecord:
 
 def build_record(*, source_class: SourceClass, source_name: str, url: str,
                  title: str, raw_excerpt: str, published, themes: list,
-                 use_llm: bool = True, criteria=None) -> SignalRecord | None:
-    """Normalize one collected item into a SignalRecord; None if already seen."""
+                 use_llm: bool = True, criteria=None,
+                 require_hint: bool = False) -> SignalRecord | None:
+    """Normalize one collected item into a SignalRecord; None if already seen.
+
+    With require_hint, items matching no watch theme are skipped BEFORE the
+    LLM summary call - a cost gate for high-noise feeds. Skipped items are not
+    marked seen, so they get another chance if the criteria later improve.
+    """
     sid = SignalRecord.make_id(url)
     if sid in store.load_seen():
+        return None
+    hints = theme_hints(f"{title} {raw_excerpt}", themes, criteria=criteria)
+    if require_hint and not hints:
         return None
     rec = SignalRecord(
         id=sid, source_class=source_class, source_name=source_name, url=url,
         published_date=parse_date(published), collected_date=date.today(),
         title=title.strip(), raw_excerpt=(raw_excerpt or "").strip()[:8000],
-        watch_theme_hints=theme_hints(f"{title} {raw_excerpt}", themes, criteria=criteria),
+        watch_theme_hints=hints,
     )
     return summarize(rec, use_llm=use_llm)

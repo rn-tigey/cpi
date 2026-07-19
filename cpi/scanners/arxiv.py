@@ -36,6 +36,8 @@ def scan(pcm, config: dict, use_llm: bool = True) -> list[SignalRecord]:
     criteria = store.load_search_criteria()
 
     records: list[SignalRecord] = []
+    fetched = 0
+    errors: list[str] = []
     for theme in pcm.watch_themes:
         query = _query_for_theme(theme, criteria.for_theme(theme.name) if criteria else None)
         if not query:
@@ -48,8 +50,10 @@ def scan(pcm, config: dict, use_llm: bool = True) -> list[SignalRecord]:
             resp.raise_for_status()
         except httpx.HTTPError as e:
             print(f"  [arxiv] theme '{theme.name}' failed: {e}")
+            errors.append(f"{theme.name}: {e}")
             continue
         feed = feedparser.parse(resp.text)
+        fetched += len(feed.entries)
         for entry in feed.entries:
             published = base.parse_date(getattr(entry, "published_parsed", None))
             if published and published < cutoff:
@@ -59,10 +63,11 @@ def scan(pcm, config: dict, use_llm: bool = True) -> list[SignalRecord]:
                 url=entry.link, title=entry.title.replace("\n", " "),
                 raw_excerpt=getattr(entry, "summary", ""),
                 published=published, themes=pcm.watch_themes, use_llm=use_llm,
-                criteria=criteria,
+                criteria=criteria, require_hint=bool(cfg.get("require_theme_hint", False)),
             )
             if rec:
                 store.save_signal(rec)
                 records.append(rec)
         base.polite_sleep()
+    base.log_scan("arXiv", fetched, len(records), "; ".join(errors) or None)
     return records

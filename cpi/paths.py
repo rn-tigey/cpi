@@ -3,7 +3,11 @@
 The CPI home directory holds context/, config/, prompts/, data/ and briefs/.
 Resolution order:
   1. CPI_HOME environment variable
-  2. the project root containing this package (development / in-repo layout)
+  2. the current project root (development / in-repo layout)
+
+Pristine copies of every template (PCM template, default configs, prompts)
+ship inside the package at cpi/templates/ - `cpi init` seeds new homes from
+there, and config/prompt loaders fall back to it when a home lacks a file.
 """
 
 import os
@@ -16,6 +20,10 @@ def home() -> Path:
     env = os.environ.get("CPI_HOME")
     root = Path(env) if env else _PACKAGE_ROOT
     return root
+
+
+def templates_dir() -> Path:
+    return Path(__file__).resolve().parent / "templates"
 
 
 def context_dir() -> Path:
@@ -68,6 +76,10 @@ def seen_urls_file() -> Path:
 
 def llm_usage_file() -> Path:
     return data_dir() / "llm_usage.jsonl"
+
+
+def scan_log_file() -> Path:
+    return data_dir() / "scan_log.jsonl"
 
 
 def ensure_layout() -> None:

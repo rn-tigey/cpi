@@ -30,6 +30,8 @@ def scan(pcm, config: dict, use_llm: bool = True) -> list[SignalRecord]:
         keywords.extend(ts.hn_keywords[:3] if ts and ts.hn_keywords else theme.keywords[:2])
 
     records: list[SignalRecord] = []
+    fetched = 0
+    errors: list[str] = []
     for kw in dict.fromkeys(keywords):  # preserve order, dedupe
         try:
             resp = httpx.get(API, params={
@@ -40,8 +42,11 @@ def scan(pcm, config: dict, use_llm: bool = True) -> list[SignalRecord]:
             resp.raise_for_status()
         except httpx.HTTPError as e:
             print(f"  [hn] keyword '{kw}' failed: {e}")
+            errors.append(f"{kw}: {e}")
             continue
-        for hit in resp.json().get("hits", []):
+        hits = resp.json().get("hits", [])
+        fetched += len(hits)
+        for hit in hits:
             url = hit.get("url") or f"https://news.ycombinator.com/item?id={hit['objectID']}"
             title = hit.get("title") or ""
             if not title:
@@ -54,10 +59,11 @@ def scan(pcm, config: dict, use_llm: bool = True) -> list[SignalRecord]:
                 url=url, title=title,
                 raw_excerpt=f"{excerpt}\n[{hit.get('points', 0)} points, {hit.get('num_comments', 0)} comments: {comment_url}]",
                 published=created, themes=pcm.watch_themes, use_llm=use_llm,
-                criteria=criteria,
+                criteria=criteria, require_hint=bool(cfg.get("require_theme_hint", False)),
             )
             if rec:
                 store.save_signal(rec)
                 records.append(rec)
         base.polite_sleep()
+    base.log_scan("Hacker News", fetched, len(records), "; ".join(errors) or None)
     return records

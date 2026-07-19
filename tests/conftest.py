@@ -13,10 +13,11 @@ os.environ["CPI_DRY_RUN"] = "1"  # no real LLM calls in tests, ever
 
 @pytest.fixture()
 def cpi_home(tmp_path, monkeypatch):
-    """Isolated CPI home: real context/config/prompts, empty data/."""
+    """Isolated CPI home seeded from the packaged templates, empty data/."""
+    templates = PROJECT_ROOT / "cpi" / "templates"
     for sub in ("context", "config", "prompts"):
-        shutil.copytree(PROJECT_ROOT / sub, tmp_path / sub)
-    # The repo ships only the template; a working home needs a pcm.yaml.
+        shutil.copytree(templates / sub, tmp_path / sub)
+    # The package ships only the template; a working home needs a pcm.yaml.
     shutil.copy(tmp_path / "context" / "pcm.template.yaml",
                 tmp_path / "context" / "pcm.yaml")
     monkeypatch.setenv("CPI_HOME", str(tmp_path))

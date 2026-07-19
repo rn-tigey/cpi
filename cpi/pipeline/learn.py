@@ -29,6 +29,30 @@ def _jsonl_block(name: str) -> str:
     return "\n".join(f"- {json.dumps(r)}" for r in rows[-50:]) or "(none)"
 
 
+PRUNE_MIN_TRIAGED = 10  # a source needs this many triaged signals before we judge it
+
+
+def _scorecard_block() -> tuple[str, list[str]]:
+    """Markdown table of per-source triage outcomes + prune candidates."""
+    rows = store.source_scorecard()
+    if not rows:
+        return "(no triaged signals yet)", []
+    lines = ["| source | advanced | parked | discarded | advance rate |",
+             "|---|---|---|---|---|"]
+    prune = []
+    for r in rows:
+        lines.append(f"| {r['source']} | {r['advance']} | {r['park']} | "
+                     f"{r['discard']} | {r['advance_rate']:.0%} |")
+        if r["total"] >= PRUNE_MIN_TRIAGED and r["advance"] == 0:
+            prune.append(r["source"])
+    if prune:
+        lines.append("")
+        lines.append(f"Prune candidates (>= {PRUNE_MIN_TRIAGED} triaged, zero advanced): "
+                     + ", ".join(prune)
+                     + " - consider removing them from sources.yaml or tightening their queries.")
+    return "\n".join(lines), prune
+
+
 def write_fewshots() -> int:
     """Compile human corrections into few-shot blocks injected into prompts."""
     n = 0
@@ -85,17 +109,20 @@ def run(missed: list[str] | None = None, auto_yes: bool = False) -> str:
     changes = apply_decisions_to_pcm(auto_yes=auto_yes)
 
     missed_block = "\n".join(f"- {m}" for m in (missed or [])) or "(none reported this quarter)"
+    scorecard, _prune = _scorecard_block()
     report = llm.complete(
         "calibrate", pcm_block=block,
         decisions_block=_decisions_block(),
         adjustments_block=_jsonl_block("score_adjustments.jsonl"),
         reversals_block=_jsonl_block("spot_checks.jsonl"),
         missed_block=missed_block,
+        scorecard_block=scorecard,
         weights_json=json.dumps(store.load_weights()),
     )
 
     out = paths.calibration_dir() / f"calibration-{date.today().strftime('%Y-%m')}.md"
     header = (f"# CPI Calibration — {date.today().isoformat()}\n\n"
-              f"Few-shot files written: {fewshots} | PCM change proposals: {len(changes)}\n\n")
+              f"Few-shot files written: {fewshots} | PCM change proposals: {len(changes)}\n\n"
+              f"## Source scorecard\n\n{scorecard}\n\n")
     out.write_text(header + report, encoding="utf-8")
     return str(out)
