@@ -60,6 +60,8 @@ def run(force: bool = False) -> str:
         "ground", GROUND_SCHEMA,
         pcm_block=pcm_mod.render_prompt_block(p),
         theme_names="\n".join(names),
+        # unused by the prompt; lets keyless dry-run echo real PCM keywords
+        theme_keywords="\n".join("|".join(t.keywords) for t in p.watch_themes),
     )
 
     themes: list[ThemeSearch] = []
