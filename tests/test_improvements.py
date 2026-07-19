@@ -61,13 +61,13 @@ def test_scorecard_ranks_sources_and_flags_prune_candidates(cpi_home):
 
 def test_extract_links_keeps_descriptive_outbound_anchors():
     html = (
-        '<p><a href="https://papers.example.org/momentum-study">'
+        '<p><a href="https://papers.example.org/anomaly-study">'
         "A Long Descriptive Paper Title &amp; Findings</a>"
         ' <a href="https://digest.example.com/self-post">Self link with long text here</a>'
         ' <a href="https://elsewhere.example.net/x">here</a></p>'
     )
     links = rss.extract_links(html, own_host="digest.example.com")
-    assert links == [("https://papers.example.org/momentum-study",
+    assert links == [("https://papers.example.org/anomaly-study",
                       "A Long Descriptive Paper Title & Findings")]
 
 

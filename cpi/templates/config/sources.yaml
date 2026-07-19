@@ -12,6 +12,14 @@ arxiv:
   max_results_per_theme: 25
   lookback_days: 7        # window per run; dedupe makes overlap harmless
 
+# Published academic literature across ALL fields (journals + proceedings,
+# DOI-indexed via Crossref). Complements arXiv, which is STEM preprints only.
+crossref:
+  cadence: weekly
+  max_results_per_theme: 15
+  lookback_days: 30
+  # mailto: you@example.com   # optional but recommended: Crossref's polite pool
+
 hn:
   cadence: daily
   lookback_days: 7
@@ -28,6 +36,15 @@ rss:
     - name: "TechCrunch"
       url: "https://techcrunch.com/feed/"
       source_class: industry
+    # ── domain research feeds (source_class: research) ──
+    # arXiv and Crossref above cover preprints + DOI-indexed publications
+    # generically. If your field has a dedicated venue, add its RSS here, e.g.:
+    #   SSRN eJournals (business/economics/law) - each eJournal has an RSS feed
+    #   bioRxiv/medRxiv (life sciences):  https://connect.biorxiv.org/biorxiv_xml.php?subject=<area>
+    #   PubMed (medicine): any search can be saved as an RSS feed from pubmed.ncbi.nlm.nih.gov
+    # - name: "bioRxiv bioinformatics"
+    #   url: "https://connect.biorxiv.org/biorxiv_xml.php?subject=bioinformatics"
+    #   source_class: research
     # ── competitor activity (release notes / blogs) ──
     # Add your competitors' changelog / blog feeds here, e.g.:
     # - name: "CompetitorA changelog"

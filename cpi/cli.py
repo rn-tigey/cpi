@@ -48,7 +48,8 @@ def ground(force: bool = typer.Option(False, help="Overwrite an existing config/
 
 
 @app.command()
-def scan(source: str = typer.Option("arxiv,rss,hn", help="Comma-separated: arxiv,rss,hn,funding"),
+def scan(source: str = typer.Option("arxiv,rss,hn",
+                                    help="Comma-separated: arxiv,crossref,rss,hn,funding"),
          no_llm: bool = typer.Option(False, help="Skip LLM summaries (truncate instead)")):
     """Stage 2 - collect signals from the configured sources."""
     from .scanners import SCANNERS

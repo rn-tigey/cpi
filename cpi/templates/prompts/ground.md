@@ -12,7 +12,7 @@ $theme_names
 For EVERY watch theme above, produce three vocabularies:
 
 - "arxiv_queries": 2-4 short phrases as they would appear in an academic paper's title or abstract (e.g. "distribution shift", not "our model breaks when data changes"). These are used as exact-phrase searches - prefer established terminology over invented compounds.
-- "hn_keywords": 2-4 terms as a developer or founder would title a Hacker News post (short, colloquial, tool-oriented; e.g. "backtesting", "feature store"). Single words or two-word phrases only.
+- "hn_keywords": 2-4 terms as a developer or founder would title a Hacker News post (short, colloquial, tool-oriented; e.g. "feature store", "vector database"). Single words or two-word phrases only.
 - "press_keywords": 3-6 terms as trade press or company blogs would phrase it (product-category language, vendor-speak; e.g. "data observability platform"). Also include 1-2 broad umbrella words that would appear in almost any relevant headline - these double as relevance-hint matchers.
 
 Rules:

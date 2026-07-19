@@ -1,3 +1,3 @@
-from . import arxiv, funding, hn, rss  # noqa: F401
+from . import arxiv, crossref, funding, hn, rss  # noqa: F401
 
-SCANNERS = {"arxiv": arxiv, "rss": rss, "hn": hn, "funding": funding}
+SCANNERS = {"arxiv": arxiv, "crossref": crossref, "rss": rss, "hn": hn, "funding": funding}

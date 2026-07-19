@@ -1,7 +1,7 @@
 # CPI — Continuous Product Intelligence
 
 A closed-loop system that maintains a context model of a product, continuously scans external
-sources (arXiv, RSS, Hacker News, funding news), LLM-triages and scores incoming signals
+sources (arXiv, Crossref, RSS, Hacker News, funding news), LLM-triages and scores incoming signals
 against that context, and produces a recurring ranked **Idea Brief** — the top 3–5 product
 ideas, each with pros, cons, evidence, and a probe-sized next step.
 
@@ -38,7 +38,7 @@ logged to `data/llm_usage.jsonl` (see totals in `cpi status`).
 | Stage | What happens | Command | Cadence |
 |---|---|---|---|
 | 1 Ground | Maintain the PCM (the lens); generate search criteria | edit `context/pcm.yaml`, then `cpi ground` | monthly review |
-| 2 Scan | Collect + normalize signals | `cpi scan --source arxiv,hn` / `...rss,funding` | daily / weekly / monthly |
+| 2 Scan | Collect + normalize signals | `cpi scan --source arxiv,hn` / `...crossref,rss` / `...funding` | daily / weekly / monthly |
 | 3 Filter | LLM triage: advance/park/discard | `cpi triage` (+ `--rescore-parked` monthly) | daily-weekly |
 | 3b Audit | Human spot-check of discards | `cpi spot-check` | weekly |
 | 4 Assess | Cluster → draft scores → human review | `cpi cluster && cpi score && cpi review-scores` | monthly |
@@ -93,7 +93,7 @@ Scanners fall back to the raw PCM theme keywords when the file is absent. Re-run
 **cron:**
 ```cron
 0 7 * * *   CPI_HOME=/path/to/home cpi scan --source arxiv,hn && cpi triage
-0 8 * * 0   CPI_HOME=/path/to/home cpi scan --source rss
+0 8 * * 0   CPI_HOME=/path/to/home cpi scan --source crossref,rss
 0 8 1 * *   CPI_HOME=/path/to/home cpi scan --source funding && cpi triage --rescore-parked && cpi cluster && cpi score
 ```
 
