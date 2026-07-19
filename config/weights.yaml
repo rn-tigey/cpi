@@ -1,0 +1,7 @@
+# Five-factor score weights. Stage 6 (calibrate) proposes adjustments; a human
+# approves any change here. Must sum to 1.0 (validated at load).
+impact: 0.30
+strategic_fit: 0.25
+effort: 0.20          # effort scores are already inverted (5 = cheap)
+timing: 0.15
+confidence: 0.10

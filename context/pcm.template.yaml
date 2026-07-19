@@ -1,0 +1,93 @@
+# ══════════════════════════════════════════════════════════════════════════
+# PRODUCT CONTEXT MODEL (PCM) — TEMPLATE
+# ══════════════════════════════════════════════════════════════════════════
+# This file is the ONLY product-specific input to the CPI pipeline. Copy it
+# to pcm.yaml (or run `cpi init --dest <folder>`), fill it in, and the whole
+# pipeline re-targets to your product. Every change should be recorded in
+# pcm_changelog.md.
+#
+# Writing guidance:
+# - Be concrete. "Enterprise auth" beats "security stuff". The LLM triages
+#   hundreds of signals against this text; vague entries produce vague triage.
+# - Non-goals matter as much as goals — they are what lets the filter say NO.
+# - 5-10 watch themes. Each needs a rationale (why leadership cares) and
+#   machine hints (arXiv categories + keywords) that drive the scanners.
+# ══════════════════════════════════════════════════════════════════════════
+
+product_name: "ExampleProduct"        # short name used in prompts and briefs
+version: "1"                          # bump on every material edit
+
+# ── 1. Capability map ─────────────────────────────────────────────────────
+# What the product does TODAY, at feature-cluster granularity.
+# maturity: nascent | maturing | mature
+capability_map:
+  - name: "Core ingestion"
+    description: "Pulls customer data from 12 SaaS connectors nightly."
+    maturity: mature
+  - name: "Anomaly alerts"
+    description: "Rule-based alerting on metric deviations; no ML yet."
+    maturity: nascent
+
+# ── 2. User & job model ───────────────────────────────────────────────────
+# Segments, jobs-to-be-done, and the top unmet needs from research/support.
+user_and_job_model:
+  segments:
+    - "Mid-market ops teams (50-500 employees)"
+  jobs_to_be_done:
+    - "Detect revenue-impacting data problems before customers do"
+  top_unmet_needs:
+    - "Root-cause explanation, not just alerts"
+
+# ── 3. Strategy frame ─────────────────────────────────────────────────────
+strategy_frame:
+  where_we_win:
+    - "Fastest time-to-value in the segment (live in one afternoon)"
+  non_goals:                          # explicit — the filter discards toward these
+    - "On-prem deployment"
+    - "Becoming a BI / dashboarding tool"
+  roadmap_themes:
+    - "ML-assisted root cause analysis"
+
+# ── 4. Technical posture ──────────────────────────────────────────────────
+# Architecture, platform dependencies, and constraints that gate adoption.
+technical_posture:
+  stack: "Python services on AWS; Postgres; event bus on Kafka"
+  dependencies:
+    - "Salesforce and HubSpot APIs (rate-limited)"
+  constraints:
+    - "Two-engineer platform team; anything needing a new datastore is expensive"
+
+# ── 5. Competitive set ────────────────────────────────────────────────────
+# Direct, adjacent, and substitutes — with their observed direction.
+competitive_set:
+  - name: "CompetitorA"
+    type: direct                      # direct | adjacent | substitute
+    direction: "Moving down-market with a free tier; shipping ML features quarterly."
+  - name: "Spreadsheets + manual checks"
+    type: substitute
+    direction: "Still the default for half the segment."
+
+# ── 6. Watch themes ───────────────────────────────────────────────────────
+# 5-10 named areas leadership has declared strategically interesting.
+# arxiv_categories and keywords drive the scanners directly.
+watch_themes:
+  - name: "LLM-based root cause analysis"
+    rationale: "Directly serves our top unmet need and roadmap theme."
+    arxiv_categories: ["cs.LG", "cs.SE"]
+    keywords: ["root cause analysis", "anomaly explanation", "LLM observability"]
+  - name: "Embedded analytics commoditization"
+    rationale: "Threatens differentiation if alerting becomes a checkbox feature."
+    arxiv_categories: []
+    keywords: ["embedded analytics", "alerting platform launch"]
+  - name: "Time-series anomaly detection advances"
+    rationale: "Core to our alerting capability; a step-change here is both threat and opportunity."
+    arxiv_categories: ["cs.LG", "stat.ML"]
+    keywords: ["time series anomaly detection", "unsupervised anomaly", "metric drift detection"]
+  - name: "Data-quality tooling consolidation"
+    rationale: "M&A among adjacent vendors reshapes who we compete with and integrate against."
+    arxiv_categories: []
+    keywords: ["data quality acquisition", "data observability funding", "data catalog merger"]
+  - name: "Warehouse-native / zero-copy architectures"
+    rationale: "If customers expect compute to run inside their warehouse, our ingestion model must adapt."
+    arxiv_categories: ["cs.DB"]
+    keywords: ["warehouse native", "zero copy data sharing", "in-warehouse compute"]

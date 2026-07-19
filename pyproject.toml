@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# NOTE: "cpi" is already taken on PyPI (US inflation data). If this project is
+# ever published there, use a distinct distribution name (e.g.
+# "continuous-product-intelligence") while keeping the import name "cpi".
+name = "cpi"
+version = "0.1.0"
+description = "Continuous Product Intelligence - closed-loop product signal scanning, triage, scoring, and idea briefs"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "Ramana Nallajarla", email = "ramanamailid@gmail.com" },
+]
+keywords = [
+    "product-management",
+    "market-intelligence",
+    "signal-scanning",
+    "llm",
+    "idea-brief",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business",
+]
+dependencies = [
+    "httpx>=0.27",
+    "pydantic>=2.5",
+    "pyyaml>=6.0",
+    "typer>=0.12",
+    "feedparser>=6.0",
+    "anthropic>=0.40",
+    "scikit-learn>=1.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.urls]
+Homepage = "https://github.com/OWNER/cpi"
+Issues = "https://github.com/OWNER/cpi/issues"
+
+[project.scripts]
+cpi = "cpi.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["cpi*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]

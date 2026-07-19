@@ -1,0 +1,41 @@
+# Signal sources. Scanners read this file; edit freely - no code changes needed.
+# cadence is documentation for the scheduler (see README); scanners themselves
+# are idempotent, so running more often than the cadence is harmless.
+#
+# The arxiv and hn scanners are keyword-driven: they take their queries from
+# the watch-theme keywords in your PCM, so they need no per-product edits here.
+# The rss and funding feed lists below are neutral starters - replace them with
+# the analyst blogs, competitor changelogs, and funding feeds for YOUR market.
+
+arxiv:
+  cadence: daily
+  max_results_per_theme: 25
+  lookback_days: 7        # window per run; dedupe makes overlap harmless
+
+hn:
+  cadence: daily
+  lookback_days: 7
+  min_points: 10          # ignore zero-traction stories
+  # keywords default to PCM watch-theme keywords; add extras here:
+  extra_keywords: []
+
+rss:
+  cadence: weekly
+  feeds:
+    # ── industry / analysts / practitioner press ──
+    - name: "TechCrunch"
+      url: "https://techcrunch.com/feed/"
+      source_class: industry
+    # ── competitor activity (release notes / blogs) ──
+    # Add your competitors' changelog / blog feeds here, e.g.:
+    # - name: "CompetitorA changelog"
+    #   url: "https://competitora.example.com/changelog/feed"
+    #   source_class: competitor
+
+funding:
+  cadence: monthly
+  feeds:
+    - name: "FinSMEs USA"
+      url: "https://www.finsmes.com/category/usa/feed"
+      source_class: funding
+    # add Crunchbase-news / TechCrunch category feeds here if desired
