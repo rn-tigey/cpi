@@ -2,8 +2,8 @@
 
 A closed-loop system that maintains a context model of a product, continuously scans external
 sources (arXiv, RSS, Hacker News, funding news), LLM-triages and scores incoming signals
-against that context, and produces a monthly ranked **Idea Brief** — the top 3–5 product ideas,
-each with pros, cons, evidence, and a probe-sized next step.
+against that context, and produces a recurring ranked **Idea Brief** — the top 3–5 product
+ideas, each with pros, cons, evidence, and a probe-sized next step.
 
 **Generic by construction** — no domain logic in code. All product specificity lives in
 `context/pcm.yaml` (the Product Context Model) and `config/sources.yaml`. Swap those two
@@ -49,6 +49,11 @@ logged to `data/llm_usage.jsonl` (see totals in `cpi status`).
 | 6 Learn | Calibration: few-shots, PCM & weight proposals | `cpi calibrate [--missed "..."]` | quarterly |
 
 `cpi status` shows counts per stage at any time.
+
+The cadences above are recommendations, not constraints — run any stage as often as fits your
+team. `cpi brief --month` accepts any period label (e.g. `2026-W30` for a weekly brief); each
+label gets its own brief file, and ideas already delivered under an earlier label are
+excluded automatically.
 
 ## Quickstart
 
