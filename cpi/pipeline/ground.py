@@ -17,11 +17,13 @@ from ..models import SearchCriteria, ThemeSearch
 
 GROUND_SCHEMA = {
     "type": "object",
+    "additionalProperties": False,
     "properties": {
         "themes": {
             "type": "array",
             "items": {
                 "type": "object",
+                "additionalProperties": False,
                 "properties": {
                     "theme": {"type": "string"},
                     "arxiv_queries": {"type": "array", "items": {"type": "string"}},
