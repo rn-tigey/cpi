@@ -40,7 +40,7 @@ logged to `data/llm_usage.jsonl` (see totals in `cpi status`).
 
 | Stage | What happens | Command | Cadence |
 |---|---|---|---|
-| 1 Ground | Maintain the PCM (the lens) | edit `context/pcm.yaml` + changelog | monthly review |
+| 1 Ground | Maintain the PCM (the lens); generate search criteria | edit `context/pcm.yaml`, then `cpi ground` | monthly review |
 | 2 Scan | Collect + normalize signals | `cpi scan --source arxiv,hn` / `...rss,funding` | daily / weekly / monthly |
 | 3 Filter | LLM triage: advance/park/discard | `cpi triage` (+ `--rescore-parked` monthly) | daily-weekly |
 | 3b Audit | Human spot-check of discards | `cpi spot-check` | weekly |
@@ -60,11 +60,24 @@ export CPI_HOME=~/cpi-myproduct        # Windows: $env:CPI_HOME = "..."
 # 2. Ground: author your PCM (see docs/pcm-authoring.md)
 #    edit $CPI_HOME/context/pcm.yaml and $CPI_HOME/config/sources.yaml
 
-# 3. Run the loop
+# 3. Let CPI translate the PCM into per-source search queries
+cpi ground        # writes config/search.yaml - review and edit it
+
+# 4. Run the loop
 cpi scan --source arxiv,hn
 cpi triage
 cpi status
 ```
+
+### Search criteria (`cpi ground`)
+
+You describe the product once in the PCM; `cpi ground` writes the searches. It derives a
+**standard set** mechanically (competitor names from `competitive_set`) and asks the judgment
+model to translate each watch theme into the vocabulary of each channel — academic phrasing
+for arXiv, developer phrasing for Hacker News, product-category phrasing for trade press.
+The output is a plain, editable `config/search.yaml`; you review it like any other config.
+Scanners fall back to the raw PCM theme keywords when the file is absent. Re-run
+`cpi ground --force` after significant PCM changes.
 
 ## Scheduling
 

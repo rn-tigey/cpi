@@ -11,6 +11,7 @@ from . import base
 
 
 def scan_feeds(feeds: list[dict], pcm, use_llm: bool = True) -> list[SignalRecord]:
+    criteria = store.load_search_criteria()
     records: list[SignalRecord] = []
     for feed_cfg in feeds:
         name, url = feed_cfg["name"], feed_cfg["url"]
@@ -33,7 +34,7 @@ def scan_feeds(feeds: list[dict], pcm, use_llm: bool = True) -> list[SignalRecor
                 source_class=source_class, source_name=name, url=link,
                 title=title, raw_excerpt=getattr(entry, "summary", ""),
                 published=base.parse_date(getattr(entry, "published_parsed", None)),
-                themes=pcm.watch_themes, use_llm=use_llm,
+                themes=pcm.watch_themes, use_llm=use_llm, criteria=criteria,
             )
             if rec:
                 store.save_signal(rec)

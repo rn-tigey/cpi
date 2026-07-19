@@ -21,6 +21,7 @@ TASK_MODELS = {
     "score": "claude-opus-4-8",
     "brief": "claude-opus-4-8",
     "calibrate": "claude-opus-4-8",
+    "ground": "claude-opus-4-8",
 }
 
 MAX_TOKENS = {
@@ -29,6 +30,7 @@ MAX_TOKENS = {
     "score": 4096,
     "brief": 8192,
     "calibrate": 4096,
+    "ground": 8192,
 }
 
 _client = None
@@ -140,4 +142,13 @@ def _canned_json(task: str, vars: dict) -> dict:
     if task == "summarize":
         return {"summary": str(vars.get("raw_excerpt", ""))[:300] or "Dry-run summary.",
                 "claimed_significance": "Dry-run significance."}
+    if task == "ground":
+        names = [n for n in str(vars.get("theme_names", "")).splitlines() if n.strip()]
+        return {"themes": [
+            {"theme": n,
+             "arxiv_queries": [f"{n.lower()} methods"],
+             "hn_keywords": [n.lower().split()[0]],
+             "press_keywords": [n.lower()]}
+            for n in names
+        ]}
     return {}

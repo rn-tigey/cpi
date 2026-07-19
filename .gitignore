@@ -19,6 +19,7 @@ briefs/*
 !briefs/.gitkeep
 *.jsonl
 context/pcm.yaml
+config/search.yaml
 
 # Authored PDFs stay out of the repo (published docs live in docs/ as markdown)
 *.pdf

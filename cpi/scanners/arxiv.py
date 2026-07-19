@@ -14,13 +14,15 @@ from . import base
 API = "https://export.arxiv.org/api/query"
 
 
-def _query_for_theme(theme) -> str | None:
+def _query_for_theme(theme, theme_search=None) -> str | None:
     parts = []
     if theme.arxiv_categories:
         parts.append("(" + " OR ".join(f"cat:{c}" for c in theme.arxiv_categories) + ")")
-    if theme.keywords:
-        kw = " OR ".join(f'all:"{k}"' for k in theme.keywords[:4])
-        parts.append(f"({kw})")
+    # `cpi ground` phrases beat raw PCM keywords - they are written in paper language
+    phrases = (theme_search.arxiv_queries if theme_search and theme_search.arxiv_queries
+               else theme.keywords)[:4]
+    if phrases:
+        parts.append("(" + " OR ".join(f'all:"{k}"' for k in phrases) + ")")
     if not parts:
         return None
     return " AND ".join(parts)
@@ -31,10 +33,11 @@ def scan(pcm, config: dict, use_llm: bool = True) -> list[SignalRecord]:
     max_results = cfg.get("max_results_per_theme", 25)
     lookback = cfg.get("lookback_days", 7)
     cutoff = date.today() - timedelta(days=lookback)
+    criteria = store.load_search_criteria()
 
     records: list[SignalRecord] = []
     for theme in pcm.watch_themes:
-        query = _query_for_theme(theme)
+        query = _query_for_theme(theme, criteria.for_theme(theme.name) if criteria else None)
         if not query:
             continue
         try:
@@ -56,6 +59,7 @@ def scan(pcm, config: dict, use_llm: bool = True) -> list[SignalRecord]:
                 url=entry.link, title=entry.title.replace("\n", " "),
                 raw_excerpt=getattr(entry, "summary", ""),
                 published=published, themes=pcm.watch_themes, use_llm=use_llm,
+                criteria=criteria,
             )
             if rec:
                 store.save_signal(rec)

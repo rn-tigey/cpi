@@ -34,12 +34,20 @@ def parse_date(value) -> date | None:
     return None
 
 
-def theme_hints(text: str, themes: list) -> list[str]:
-    """Cheap keyword-overlap hints; the triage LLM does the real judgment."""
+def theme_hints(text: str, themes: list, criteria=None) -> list[str]:
+    """Cheap keyword-overlap hints; the triage LLM does the real judgment.
+
+    With `cpi ground` criteria present, each theme also matches on its
+    channel-translated vocabulary - PCM keywords alone are usually phrased
+    too academically to appear verbatim in headlines.
+    """
     lowered = text.lower()
     hits = []
     for t in themes:
-        if any(kw.lower() in lowered for kw in t.keywords) or t.name.lower() in lowered:
+        terms = [*t.keywords, t.name]
+        if criteria is not None:
+            terms += criteria.all_theme_terms(t.name)
+        if any(term.lower() in lowered for term in terms if term):
             hits.append(t.name)
     return hits
 
@@ -64,7 +72,7 @@ def summarize(rec: SignalRecord, use_llm: bool = True) -> SignalRecord:
 
 def build_record(*, source_class: SourceClass, source_name: str, url: str,
                  title: str, raw_excerpt: str, published, themes: list,
-                 use_llm: bool = True) -> SignalRecord | None:
+                 use_llm: bool = True, criteria=None) -> SignalRecord | None:
     """Normalize one collected item into a SignalRecord; None if already seen."""
     sid = SignalRecord.make_id(url)
     if sid in store.load_seen():
@@ -73,6 +81,6 @@ def build_record(*, source_class: SourceClass, source_name: str, url: str,
         id=sid, source_class=source_class, source_name=source_name, url=url,
         published_date=parse_date(published), collected_date=date.today(),
         title=title.strip(), raw_excerpt=(raw_excerpt or "").strip()[:8000],
-        watch_theme_hints=theme_hints(f"{title} {raw_excerpt}", themes),
+        watch_theme_hints=theme_hints(f"{title} {raw_excerpt}", themes, criteria=criteria),
     )
     return summarize(rec, use_llm=use_llm)
