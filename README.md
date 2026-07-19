@@ -18,9 +18,6 @@ Read more: [White Paper](docs/white-paper.md) (the framework) ·
 
 ## Setup
 
-Install from source (a wheel install would not carry the `context/`, `config/`, and `prompts/`
-template folders that `cpi init` copies — packaging them via `importlib.resources` is future work):
-
 ```bash
 git clone https://github.com/rn-tigey/cpi.git && cd cpi
 pip install -e ".[dev]"
@@ -48,7 +45,14 @@ logged to `data/llm_usage.jsonl` (see totals in `cpi status`).
 | 5 Recommend | Ranked Idea Brief (top ≤5) | `cpi brief` then `cpi decide <id> fund\|park\|kill` | monthly |
 | 6 Learn | Calibration: few-shots, PCM & weight proposals | `cpi calibrate [--missed "..."]` | quarterly |
 
-`cpi status` shows counts per stage at any time.
+`cpi status` shows counts per stage at any time, plus a per-source health table that warns
+when a configured source has stopped producing signals (dead feed, drifted queries).
+
+Cost and noise controls: set `require_theme_hint: true` on a noisy feed (or the hn section)
+to skip off-theme items before they cost a triage call; set `expand_links: true` on
+digest/roundup feeds to also collect the primary sources they link to; tune idea granularity
+with `cpi cluster --threshold`. Quarterly, `cpi calibrate` includes a per-source scorecard
+and flags sources that never produce advanced signals.
 
 The cadences above are recommendations, not constraints — run any stage as often as fits your
 team. `cpi brief --month` accepts any period label (e.g. `2026-W30` for a weekly brief); each
@@ -119,15 +123,24 @@ they are the human half of the hybrid.
 
 ## Layout
 
+Repository:
+
 ```
 cpi/               the Python package (cli, llm, models, pcm, store, scanners/, pipeline/)
-context/           pcm.template.yaml (copy to pcm.yaml), pcm_changelog.md
-config/            sources.yaml, weights.yaml
-prompts/           editable LLM prompt templates (no code changes needed)
-data/              signals/, triage/, discards/, ideas/, calibration/, decisions/  (gitignored)
-briefs/            YYYY-MM-idea-brief.md
+cpi/templates/     pristine templates shipped in the wheel: PCM template, default
+                   config (sources.yaml, weights.yaml), LLM prompt templates
 tests/             pytest suite (network mocked, LLM dry-run)
 docs/              white paper, technical paper, guides
+```
+
+A CPI home (created by `cpi init`, one per product):
+
+```
+context/           pcm.yaml (yours), pcm.template.yaml, pcm_changelog.md
+config/            sources.yaml, weights.yaml, search.yaml (from `cpi ground`)
+prompts/           editable LLM prompt templates (no code changes needed)
+data/              signals/, triage/, ideas/, calibration/, scan_log.jsonl, ...
+briefs/            <label>-idea-brief.md
 ```
 
 ## Tests

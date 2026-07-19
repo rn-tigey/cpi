@@ -53,6 +53,9 @@ cpi = "cpi.cli:app"
 [tool.setuptools.packages.find]
 include = ["cpi*"]
 
+[tool.setuptools.package-data]
+cpi = ["templates/**/*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 

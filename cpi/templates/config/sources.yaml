@@ -18,6 +18,8 @@ hn:
   min_points: 10          # ignore zero-traction stories
   # keywords default to PCM watch-theme keywords; add extras here:
   extra_keywords: []
+  # require_theme_hint: true   # skip items matching no watch theme (cuts triage cost
+  #                            # on broad keywords; also available per rss/funding feed)
 
 rss:
   cadence: weekly
@@ -31,6 +33,11 @@ rss:
     # - name: "CompetitorA changelog"
     #   url: "https://competitora.example.com/changelog/feed"
     #   source_class: competitor
+    #
+    # Per-feed options:
+    #   require_theme_hint: true   # skip items matching no watch theme (cost gate)
+    #   expand_links: true         # for digest/roundup feeds: also create signals
+    #                              # from outbound links in each entry
 
 funding:
   cadence: monthly

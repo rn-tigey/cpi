@@ -20,12 +20,10 @@ app = typer.Typer(help="Continuous Product Intelligence - scan, triage, score, b
 @app.command()
 def init(dest: Path = typer.Option(..., help="Folder to initialize for a new product")):
     """Bootstrap a new CPI home (PCM template + configs + prompts) for another product."""
-    src = paths.home()
+    src = paths.templates_dir()  # pristine templates ship inside the package
     dest.mkdir(parents=True, exist_ok=True)
     for sub in ("config", "prompts"):
-        # search.yaml is generated per-product by `cpi ground` - never seed it
-        shutil.copytree(src / sub, dest / sub, dirs_exist_ok=True,
-                        ignore=shutil.ignore_patterns("search.yaml"))
+        shutil.copytree(src / sub, dest / sub, dirs_exist_ok=True)
     (dest / "context").mkdir(exist_ok=True)
     shutil.copy(src / "context" / "pcm.template.yaml", dest / "context" / "pcm.template.yaml")
     target_pcm = dest / "context" / "pcm.yaml"
@@ -110,11 +108,13 @@ def spot_check(n: int = typer.Option(5, help="Sample size from the discard pile"
 
 
 @app.command()
-def cluster():
+def cluster(threshold: Optional[float] = typer.Option(
+        None, min=0.0, max=2.0,
+        help="Cosine distance threshold (default 0.8). Higher merges more aggressively.")):
     """Stage 4a - group advanced signals into candidate ideas."""
     from .pipeline import cluster as cluster_mod
 
-    ideas = cluster_mod.run()
+    ideas = cluster_mod.run(threshold=threshold)
     typer.echo(f"{len(ideas)} new candidate idea(s).")
 
 
@@ -193,6 +193,19 @@ def status():
     in_tok = sum(u.get("input_tokens", 0) for u in usage)
     out_tok = sum(u.get("output_tokens", 0) for u in usage)
     typer.echo(f"LLM usage:  {len(usage)} calls, {in_tok:,} in / {out_tok:,} out tokens")
+
+    health = store.source_health()
+    if health:
+        typer.echo("Sources:")
+        for h in health:
+            typer.echo(f"  {h['source']:<24} last {h['last_ts'][:10]}: {h['last_new']} new "
+                       f"({h['runs']} run(s), {h['total_new']} total)")
+        for h in health:
+            if h["last_error"]:
+                typer.echo(f"  ! {h['source']}: last run failed - {h['last_error'][:100]}")
+            elif h["zero_streak"] >= 3:
+                typer.echo(f"  ! {h['source']}: 0 new signals in last {h['zero_streak']} runs - "
+                           "check the feed/queries")
 
 
 if __name__ == "__main__":

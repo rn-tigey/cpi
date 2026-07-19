@@ -51,6 +51,8 @@ def _get_client():
 
 def load_prompt(task: str, **vars) -> str:
     path = paths.prompts_dir() / f"{task}.md"
+    if not path.exists():  # home not seeded with prompts - use the packaged ones
+        path = paths.templates_dir() / "prompts" / f"{task}.md"
     template = Template(path.read_text(encoding="utf-8"))
     # Few-shot calibration examples (written by Stage 6) are injected when present.
     fewshots = paths.calibration_dir() / f"fewshots_{task}.md"
