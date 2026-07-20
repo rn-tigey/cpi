@@ -12,6 +12,8 @@ files (or use `cpi init`) and the pipeline re-targets to a different product.
 **Hybrid by default** — AI agents do the exhaustive collection and first-pass triage; humans own
 scoring calibration, kill decisions, and the final recommendation.
 
+![The CPI flow: init, ground, scan, triage, brief](docs/demo.gif)
+
 Read more: [White Paper](docs/white-paper.md) (the framework) ·
 [Technical Paper](docs/technical-paper.md) (this implementation) ·
 [Getting Started](docs/getting-started.md) · [PCM Authoring Guide](docs/pcm-authoring.md)
