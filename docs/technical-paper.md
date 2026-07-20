@@ -7,18 +7,19 @@ implementation realizes.
 
 ## 1 · System shape
 
-Python 3.11 package, ~15 modules. Typer CLI, one command per stage. File-based store (JSON
+Python 3.11 package, ~20 modules. Typer CLI, one command per stage. File-based store (JSON
 per record, JSONL for append-only logs); no database, no service. Scheduling is cron / Task
 Scheduler; the human-judgment commands (`spot-check`, `review-scores`, `brief`, `decide`,
-`calibrate`) are deliberately unscheduled. All product specificity lives in `context/pcm.yaml` +
-`config/sources.yaml`; re-targeting is `cpi init --dest` + `CPI_HOME`.
+`calibrate`) are deliberately unscheduled. All product specificity lives in a per-product home
+(`context/pcm.yaml` + `config/*.yaml`), seeded from templates shipped inside the package;
+re-targeting is `cpi init --dest` + `CPI_HOME`.
 
 ```
 cpi/{cli,llm,models,pcm,store,paths}.py
-cpi/scanners/{arxiv,rss,hn,funding,base}.py
-cpi/pipeline/{triage,cluster,score,brief,learn}.py
-context/pcm.yaml · config/{sources,weights}.yaml · prompts/*.md
-data/** (gitignored) · briefs/ · tests/ (5 suites)
+cpi/scanners/{arxiv,crossref,rss,hn,funding,base}.py
+cpi/pipeline/{draft_pcm,ground,triage,cluster,score,brief,learn}.py
+cpi/templates/{context,config,prompts}/ (shipped in the wheel; seeds each home)
+data/** (gitignored) · briefs/ · tests/
 ```
 
 ## 2 · Data model (pydantic)
@@ -36,7 +37,7 @@ data/** (gitignored) · briefs/ · tests/ (5 suites)
 
 - **Single wrapper** (`llm.py`) — every call goes through it. Per-task model split:
   `claude-haiku-4-5` for volume tasks (summarize, triage), `claude-opus-4-8` with adaptive
-  thinking for judgment tasks (score, brief, calibrate). Per-task `max_tokens`.
+  thinking for judgment tasks (score, brief, calibrate, ground, draft-pcm). Per-task `max_tokens`.
 - **Structured outputs** — triage and scoring use schema-constrained JSON output, so
   dispositions and scores cannot come back malformed; no regex-parsing of free text.
 - **Prompts are files** (`prompts/*.md`, `string.Template`) — editable without code changes.
@@ -50,20 +51,23 @@ data/** (gitignored) · briefs/ · tests/ (5 suites)
 
 | Stage | Implementation detail that matters |
 |---|---|
-| Scan | Four scanners behind a common base; idempotent via URL-hash ids; per-source rate limiting; `--no-llm` falls back to truncation instead of LLM summaries. Watch-theme arXiv categories/keywords come from the PCM, so scan targeting updates when the PCM does. |
+| Ground | `cpi draft-pcm` bootstraps the PCM from existing artifacts (docs + repo), with open-question comments for what the artifacts cannot answer. `cpi ground` translates watch themes into per-channel search vocabulary (`config/search.yaml`, human-editable; scanners fall back to raw PCM keywords without it). |
+| Scan | Five scanners (arXiv, Crossref, RSS, HN, funding) behind a common base; idempotent via URL-hash ids; per-source rate limiting; per-run health logging surfaced in `cpi status`; `--no-llm` falls back to truncation instead of LLM summaries. Per-feed options: `require_theme_hint` (pre-triage cost gate), `expand_links` (digest → primary sources). |
 | Triage | One schema-constrained call per signal against the PCM block. Parks get an explicit re-review trigger; `--rescore-parked` re-runs the parked queue monthly. Per-signal failures are counted, not fatal. |
-| Cluster | TF-IDF + agglomerative clustering (cosine, distance threshold 0.8) over advanced-but-unclustered signals. No embeddings API dependency — cheap and local. The richest member signal names the idea. |
+| Cluster | TF-IDF + agglomerative clustering (cosine, distance threshold 0.8, tunable via `--threshold`) over advanced-but-unclustered signals. No embeddings API dependency — cheap and local. The richest member signal names the idea. |
 | Score | LLM drafts with per-factor justifications; `review-scores` is an interactive session where every human delta is appended to `score_adjustments.jsonl` — the calibration dataset is a side effect of normal use. |
 | Brief | Hard cap 5 ideas; excess queues. Machine-enforced honesty: each page must contain all seven required sections, and the cons section must be ≥ 70% of the pros word count — one retry with the failure fed back, then hard-fail. `briefed_in` prevents duplicates across months. |
-| Learn | Compiles spot-check reversals + score deltas into few-shot files; proposes PCM changes from decisions (funded → watch theme, killed → non-goal) with human confirmation; LLM-drafted calibration report reviews weights. Proposals land in the changelog, not silently in the PCM. |
+| Learn | Compiles spot-check reversals + score deltas into few-shot files; proposes PCM changes from decisions (funded → watch theme, killed → non-goal) with human confirmation; LLM-drafted calibration report reviews weights and includes a per-source triage scorecard with prune candidates. Proposals land in the changelog, not silently in the PCM. |
 
 ## 5 · Testing & operations
 
-Five pytest suites: PCM schema validation, normalization/dedupe, scoring math, brief validation
-(section presence + pros/cons ratio), and an end-to-end pipeline dry-run. All network mocked;
-LLM in dry-run — the suite runs keyless and offline. Cadences: scan+triage daily
-(cron/schtasks examples shipped), RSS weekly, funding + parked-rescore + cluster + score
-monthly; the judgment commands stay manual by design.
+Eight pytest files (38 tests at this writing): PCM schema validation, normalization/dedupe,
+scoring math, brief validation (section presence + pros/cons ratio), search-criteria generation,
+PCM drafting, the Crossref scanner, scan health/scorecard/link-expansion behaviors, and an
+end-to-end pipeline dry-run. Network calls are mocked; LLM in dry-run — the suite runs keyless
+and offline. Cadences: scan+triage daily (cron/schtasks examples shipped), Crossref+RSS
+weekly, funding + parked-rescore + cluster + score monthly; the judgment commands stay
+manual by design.
 
 ## 6 · Critical review — gaps against the design
 
@@ -79,7 +83,6 @@ priority order:
 | No `cpi ask` | The interrogable evidence base (RAG over the signal corpus) is unimplemented. Depends on the same embedding index; sensible v0.2 scope. |
 | Word-count cons check is a proxy | The ≥ 70% ratio enforces length, not argumentative force — an LLM can pad cons. Cheap improvement: a second-pass LLM critique scoring con specificity, with the ratio kept as a floor. |
 | No retry/backoff on LLM calls | Transient API failures surface as per-signal errors. Fine interactively; add exponential backoff before scheduling unattended runs. |
-| Init doesn't reset learned state | `cpi init` copies configs/prompts but does not explicitly exclude few-shot files if a home is copied wholesale; init must guarantee fresh calibration state for each adopting team. |
 
 What the implementation gets right that the design under-specified: structural dedupe via
 URL-hash ids; the draft/final score separation that makes calibration data a free by-product;

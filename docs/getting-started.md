@@ -49,7 +49,7 @@ cpi draft-pcm --docs ./my-prds --repo ./my-product-repo
 The machine extracts what documents state well (capabilities, stack, roadmap); what they
 never state — non-goals, where you truly win — comes back as `OPEN QUESTION` comments in
 the draft that you must answer yourself. Review every entry, bump `version` to `"1"`, and
-continue from step 4. Otherwise, author it by hand:
+continue with steps 3–5 below. Otherwise, author it by hand:
 
 1. Open `$CPI_HOME/context/pcm.yaml` (seeded from the template).
 2. Fill in all six sections following the [PCM Authoring Guide](pcm-authoring.md). The
@@ -99,7 +99,8 @@ cpi calibrate                   # few-shots from your corrections; PCM/weight pr
 
 After the first monthly pass, open `$CPI_HOME/briefs/<YYYY-MM>-idea-brief.md`. Each of the
 top 3–5 ideas has a fixed page: the idea, the signal evidence, why now, cost of inaction, pros,
-cons (enforced to be as substantial as the pros), the five-factor score, and a probe-sized next
+cons (a validation rule requires them to match the pros in length — real substance is on the
+reviewer), the five-factor score, and a probe-sized next
 step. Hold a 45-minute review, and record a fund/park/kill decision for every idea with
 `cpi decide` — those decisions are what the Learn stage uses to make the next cycle better.
 
