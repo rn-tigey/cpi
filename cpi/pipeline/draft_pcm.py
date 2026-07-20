@@ -93,10 +93,13 @@ def gather_docs(folders: list[Path]) -> list[tuple[str, str]]:
         for p in sorted(folder.rglob("*")):
             if not p.is_file() or p.suffix.lower() not in DOC_EXTS:
                 continue
-            if any(part.startswith(".") or part in ("node_modules", "venv", ".venv")
-                   for part in p.parts):
+            rel = p.relative_to(folder)
+            # judge hidden/vendored dirs INSIDE the folder only - the folder
+            # itself may legitimately live under a dotted path
+            if any(part.startswith(".") or part in ("node_modules", "venv")
+                   for part in rel.parts):
                 continue
-            out.append((str(p.relative_to(folder)), _read_capped(p)))
+            out.append((str(rel), _read_capped(p)))
     return out
 
 

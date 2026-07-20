@@ -25,6 +25,18 @@ def test_gather_docs_reads_only_doc_files(tmp_path):
     assert not any("png" in label for label in labels)
 
 
+def test_gather_docs_allows_dotted_parent_folders(tmp_path):
+    # the docs folder itself may live under a dotted path (e.g. ~/.company/specs);
+    # only hidden dirs INSIDE the folder are skipped
+    inner = tmp_path / ".workspace" / "specs"
+    inner.mkdir(parents=True)
+    (inner / "prd.md").write_text("A PRD.", encoding="utf-8")
+    (inner / ".hidden" ).mkdir()
+    (inner / ".hidden" / "skip.md").write_text("nope", encoding="utf-8")
+    labels = [label for label, _ in draft_pcm.gather_docs([inner])]
+    assert labels == ["prd.md"]
+
+
 def test_artifacts_block_caps_total_size():
     parts = [("big1.md", "x" * 80000), ("big2.md", "y" * 80000)]
     block = draft_pcm.artifacts_block(parts)
