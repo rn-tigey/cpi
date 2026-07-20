@@ -4,6 +4,14 @@
 
 **White Paper · Product Strategy · Version 0.9 · July 2026 · Ramana Nallajarla**
 
+> **Scope note.** This paper describes the CPI *framework* — the full design. The open-source
+> reference implementation in this repository ships a subset of it: several design elements
+> described below (novelty scoring, embedding-based parked-signal wake-ups, the triangulation
+> gate, and the interrogable signal corpus of §10) are **not yet implemented**; the
+> [Technical Paper](technical-paper.md) §6 tracks exactly which. Volume figures in this paper
+> are design expectations, not measurements — the first pilots observed on the order of
+> 50–150 signals per week, not the 200–500 projected in §5.
+
 ## 1 · Executive Summary
 
 Every product organization is expected to stay current with industry trends, competitive moves,

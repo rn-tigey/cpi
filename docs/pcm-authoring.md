@@ -5,8 +5,9 @@ CPI pipeline and the single largest determinant of its signal quality. Every sca
 triage verdict, and every score is judged against this document. An afternoon spent writing it
 well pays back every week the loop runs.
 
-Start from `context/pcm.template.yaml` (or `cpi init`, which seeds it for you), then work
-through the six sections below. Bump `version` and log every material edit in
+Start from `context/pcm.template.yaml` (`cpi init` seeds it for you), or draft it from your
+existing PRDs and repo with `cpi draft-pcm` and then answer its open questions. Either way,
+work through the six sections below. Bump `version` and log every material edit in
 `context/pcm_changelog.md`.
 
 ## Ground rules
@@ -64,8 +65,10 @@ dilutes attention). Each theme carries:
   prompts.
 - `arxiv_categories` — e.g. `["cs.LG", "cs.SE"]`; drives the arXiv scanner. Empty list is fine
   for non-research themes.
-- `keywords` — 2–5 phrases; drive the Hacker News scanner and cheap keyword hinting.
-  Use the phrases practitioners actually write, not internal jargon.
+- `keywords` — 2–5 phrases; the scanners' fallback queries and cheap keyword hints.
+  Use the phrases practitioners actually write, not internal jargon. In practice
+  `cpi ground` translates each theme into per-channel vocabulary (`config/search.yaml`)
+  that takes precedence over these — keywords still matter as the seed and fallback.
 
 Good themes name a *development you'd act on*, not a topic: "embedded analytics
 commoditization" (a move you'd respond to) beats "analytics" (a topic you'd drown in).
