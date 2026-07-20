@@ -39,6 +39,18 @@ confidentiality as your strategy documents.
 
 Copy nothing, guess nothing — this is the step that determines signal quality.
 
+**Shortcut if you already have artifacts:** point CPI at your PRDs, strategy docs, or the
+product's git repo and let it draft the PCM for you:
+
+```bash
+cpi draft-pcm --docs ./my-prds --repo ./my-product-repo
+```
+
+The machine extracts what documents state well (capabilities, stack, roadmap); what they
+never state — non-goals, where you truly win — comes back as `OPEN QUESTION` comments in
+the draft that you must answer yourself. Review every entry, bump `version` to `"1"`, and
+continue from step 4. Otherwise, author it by hand:
+
 1. Open `$CPI_HOME/context/pcm.yaml` (seeded from the template).
 2. Fill in all six sections following the [PCM Authoring Guide](pcm-authoring.md). The
    watch themes' `arxiv_categories` and `keywords` directly drive the scanners.

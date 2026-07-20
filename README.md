@@ -37,6 +37,7 @@ logged to `data/llm_usage.jsonl` (see totals in `cpi status`).
 
 | Stage | What happens | Command | Cadence |
 |---|---|---|---|
+| 0 Draft | Bootstrap the PCM from existing artifacts | `cpi draft-pcm --docs <prds> --repo <repo>` | once |
 | 1 Ground | Maintain the PCM (the lens); generate search criteria | edit `context/pcm.yaml`, then `cpi ground` | monthly review |
 | 2 Scan | Collect + normalize signals | `cpi scan --source arxiv,hn` / `...crossref,rss` / `...funding` | daily / weekly / monthly |
 | 3 Filter | LLM triage: advance/park/discard | `cpi triage` (+ `--rescore-parked` monthly) | daily-weekly |
@@ -68,6 +69,9 @@ export CPI_HOME=~/cpi-myproduct        # Windows: $env:CPI_HOME = "..."
 
 # 2. Ground: author your PCM (see docs/pcm-authoring.md)
 #    edit $CPI_HOME/context/pcm.yaml and $CPI_HOME/config/sources.yaml
+#    Have PRDs or a product repo already? Draft it instead of starting blank:
+#      cpi draft-pcm --docs ./my-prds --repo ./my-product
+#    then answer the OPEN QUESTION comments in the generated pcm.yaml.
 
 # 3. Let CPI translate the PCM into per-source search queries
 cpi ground        # writes config/search.yaml - review and edit it
