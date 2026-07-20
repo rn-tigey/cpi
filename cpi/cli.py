@@ -37,6 +37,24 @@ def init(dest: Path = typer.Option(..., help="Folder to initialize for a new pro
     typer.echo(f"2) Run with: set CPI_HOME={dest} (or export CPI_HOME={dest})")
 
 
+@app.command("draft-pcm")
+def draft_pcm(
+        docs: list[Path] = typer.Option([], "--docs",
+                                        help="Folder(s) or file(s) of PRDs/strategy docs "
+                                             "(.md/.txt/.rst; repeatable)"),
+        repo: Optional[Path] = typer.Option(None, "--repo",
+                                            help="Product git repo (README, docs/, "
+                                                 "manifests, commit log)"),
+        force: bool = typer.Option(False, help="Overwrite an existing, non-template pcm.yaml")):
+    """Stage 0 - draft the PCM from existing artifacts; you answer the open questions."""
+    from .pipeline import draft_pcm as draft_mod
+
+    path = draft_mod.run(docs=list(docs), repo=repo, force=force)
+    typer.echo(f"Draft PCM written: {path}")
+    typer.echo("Review it, answer the OPEN QUESTION comments, bump version to \"1\", "
+               "then run: cpi ground")
+
+
 @app.command()
 def ground(force: bool = typer.Option(False, help="Overwrite an existing config/search.yaml")):
     """Stage 1 - translate the PCM into per-source search criteria (config/search.yaml)."""

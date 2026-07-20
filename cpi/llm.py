@@ -22,6 +22,7 @@ TASK_MODELS = {
     "brief": "claude-opus-4-8",
     "calibrate": "claude-opus-4-8",
     "ground": "claude-opus-4-8",
+    "draft_pcm": "claude-opus-4-8",
 }
 
 MAX_TOKENS = {
@@ -31,6 +32,7 @@ MAX_TOKENS = {
     "brief": 8192,
     "calibrate": 4096,
     "ground": 8192,
+    "draft_pcm": 8192,
 }
 
 _client = None
@@ -144,6 +146,28 @@ def _canned_json(task: str, vars: dict) -> dict:
     if task == "summarize":
         return {"summary": str(vars.get("raw_excerpt", ""))[:300] or "Dry-run summary.",
                 "claimed_significance": "Dry-run significance."}
+    if task == "draft_pcm":
+        return {
+            "product_name": "DraftedProduct",
+            "capability_map": [{"name": "Core feature", "description": "Dry-run capability.",
+                                "maturity": "mature"}],
+            "user_and_job_model": {"segments": ["Dry-run segment"],
+                                   "jobs_to_be_done": ["Dry-run job"],
+                                   "top_unmet_needs": ["Dry-run need"]},
+            "strategy_frame": {"where_we_win": ["Dry-run differentiator"],
+                               "non_goals": ["Dry-run non-goal"],
+                               "roadmap_themes": ["Dry-run roadmap theme"]},
+            "technical_posture": {"stack": "Dry-run stack",
+                                  "dependencies": ["Dry-run dependency"],
+                                  "constraints": ["Dry-run constraint"]},
+            "competitive_set": [{"name": "DryRunCompetitor", "type": "direct",
+                                 "direction": "Dry-run direction."}],
+            "watch_themes": [{"name": f"Dry-run theme {i}", "rationale": "Dry-run rationale.",
+                              "arxiv_categories": [], "keywords": [f"dry-run keyword {i}"]}
+                             for i in range(1, 6)],
+            "open_questions": ["Dry-run: what are the real non-goals?"],
+            "low_confidence": ["Dry-run non-goal"],
+        }
     if task == "ground":
         names = [n for n in str(vars.get("theme_names", "")).splitlines() if n.strip()]
         kw_rows = str(vars.get("theme_keywords", "")).splitlines()
