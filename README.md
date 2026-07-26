@@ -78,11 +78,14 @@ export CPI_HOME=~/cpi-myproduct        # Windows: $env:CPI_HOME = "..."
 # 3. Let CPI translate the PCM into per-source search queries
 cpi ground        # writes config/search.yaml - review and edit it
 
-# 4. Run the loop
-cpi scan --source arxiv,hn
-cpi triage
-cpi status
+# 4. Run a full cycle in one shot - scan -> triage -> cluster -> score -> brief
+cpi run
 ```
+
+`cpi run` does the entire automated half in one command — enough to get your first ranked
+brief in one sitting. The per-stage commands below are for scheduled operation and for the
+human half of the loop (spot-checks, score review, decisions), which no command automates
+on purpose.
 
 ### Search criteria (`cpi ground`)
 

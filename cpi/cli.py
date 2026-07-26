@@ -88,6 +88,54 @@ def scan(source: str = typer.Option("arxiv,rss,hn",
 
 
 @app.command()
+def run(source: str = typer.Option("arxiv,crossref,rss,hn,funding",
+                                   help="Comma-separated sources to scan first"),
+        no_llm: bool = typer.Option(False, help="Skip LLM summaries during scan")):
+    """One-shot cycle: scan -> triage -> cluster -> score -> brief.
+
+    Everything automated in one command. The human-judgment commands
+    (spot-check, review-scores, decide, calibrate) stay separate on purpose -
+    they are your half of the loop.
+    """
+    from .pipeline import brief as brief_mod
+    from .pipeline import cluster as cluster_mod
+    from .pipeline import score as score_mod
+    from .pipeline import triage as triage_mod
+    from .scanners import SCANNERS
+
+    paths.ensure_layout()
+    p = pcm_mod.load()
+    config = store.load_sources()
+    if store.load_search_criteria() is None:
+        typer.echo("tip: `cpi ground` (once) usually improves scan quality a lot\n")
+
+    typer.echo(f"[1/5] scan ({source or 'skipped'})")
+    for name in [s.strip() for s in source.split(",") if s.strip()]:
+        if name not in SCANNERS:
+            typer.echo(f"Unknown source '{name}' (valid: {', '.join(SCANNERS)})")
+            raise typer.Exit(1)
+        records = SCANNERS[name].scan(p, config, use_llm=not no_llm)
+        typer.echo(f"      {name}: {len(records)} new signal(s)")
+
+    typer.echo("[2/5] triage")
+    typer.echo(f"      {triage_mod.run()}")
+    typer.echo("[3/5] cluster")
+    ideas = cluster_mod.run()
+    typer.echo(f"      {len(ideas)} new candidate idea(s)")
+    typer.echo("[4/5] score")
+    typer.echo(f"      {score_mod.run()} idea(s) scored")
+    typer.echo("[5/5] brief")
+    try:
+        path = brief_mod.run()
+    except SystemExit:
+        typer.echo("      no scored ideas to brief yet - run again after more signals accumulate")
+        return
+    typer.echo(f"      Brief written: {path}")
+    typer.echo("\nNext: read the brief, then record a decision per idea: "
+               "cpi decide <idea-id> fund|park|kill")
+
+
+@app.command()
 def triage(limit: Optional[int] = typer.Option(None, help="Max signals this run"),
            rescore_parked: bool = typer.Option(False, help="Re-score the parked queue (monthly)")):
     """Stage 3 - LLM triage of new signals against the PCM."""

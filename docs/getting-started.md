@@ -69,7 +69,31 @@ continue with steps 3–5 below. Otherwise, author it by hand:
    not magic. Without it, scanners fall back to your raw PCM keywords, which are usually too
    academic to match headlines. Re-run with `--force` after significant PCM edits.
 
-## 4. Run the loop
+## 4. Your first brief — one command, one sitting
+
+You do not need any schedule or routine to try CPI. One command runs the whole automated
+half — scan → triage → cluster → score → brief:
+
+```bash
+cpi run
+```
+
+Ten minutes later (mostly feed-fetching), open `$CPI_HOME/briefs/<YYYY-MM>-idea-brief.md`.
+Each ranked idea has a fixed page: the idea, the signal evidence, why now, cost of inaction,
+pros, cons (a validation rule requires them to match the pros in length — real substance is on
+the reviewer), the five-factor score, and a probe-sized next step. If the first run finds too
+few signals to make ideas, run it again in a few days — signals accumulate.
+
+Judge CPI by this brief: if nothing in it is worth a second look for your product, sharpen the
+PCM (usually the watch themes and non-goals) and try again before investing anything more.
+
+`cpi status` at any time shows counts per stage, per-source health, and LLM spend to date.
+
+## 5. Operating it properly — once it's earned it
+
+When the briefs prove useful, graduate from one-shot runs to the operating rhythm. This is
+where CPI stops being a report generator and becomes a loop: the human steps below are what
+make each cycle better than the last.
 
 ```bash
 # Daily (automate these — see README scheduling section)
@@ -77,14 +101,13 @@ cpi scan --source arxiv,hn      # collect + normalize signals
 cpi triage                      # LLM: advance / park / discard vs. your PCM
 
 # Weekly
-cpi scan --source rss
+cpi scan --source crossref,rss
 cpi spot-check                  # human: sample 5 discards, keep the filter honest
 
 # Monthly
 cpi scan --source funding
 cpi triage --rescore-parked     # parked signals get a second look
-cpi cluster                     # group advanced signals into candidate ideas
-cpi score                       # LLM drafts five-factor scores
+cpi cluster && cpi score        # group into ideas, draft five-factor scores
 cpi review-scores               # human: adjust scores (deltas become calibration data)
 cpi brief                       # the ranked Idea Brief -> briefs/YYYY-MM-idea-brief.md
 cpi decide <idea-id> fund       # record every disposition: fund | park | kill
@@ -93,16 +116,10 @@ cpi decide <idea-id> fund       # record every disposition: fund | park | kill
 cpi calibrate                   # few-shots from your corrections; PCM/weight proposals
 ```
 
-`cpi status` at any time shows counts per stage and LLM spend to date.
-
-## 5. Read your first brief
-
-After the first monthly pass, open `$CPI_HOME/briefs/<YYYY-MM>-idea-brief.md`. Each of the
-top 3–5 ideas has a fixed page: the idea, the signal evidence, why now, cost of inaction, pros,
-cons (a validation rule requires them to match the pros in length — real substance is on the
-reviewer), the five-factor score, and a probe-sized next
-step. Hold a 45-minute review, and record a fund/park/kill decision for every idea with
-`cpi decide` — those decisions are what the Learn stage uses to make the next cycle better.
+Skipping the human steps costs you nothing today and everything later: without spot-checks
+nobody audits the filter, without score reviews and decisions the Learn stage has no data,
+and the system stays exactly as good as it was on day one. Hold the monthly review as a
+45-minute session and record a fund/park/kill decision for every briefed idea.
 
 ## Troubleshooting
 
