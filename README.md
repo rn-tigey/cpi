@@ -1,16 +1,19 @@
 # CPI — Continuous Product Intelligence
 
-A closed-loop system that maintains a context model of a product, continuously scans external
-sources (arXiv, Crossref, RSS, Hacker News, funding news), LLM-triages and scores incoming signals
-against that context, and produces a recurring ranked **Idea Brief** — the top 3–5 product
-ideas, each with pros, cons, evidence, and a probe-sized next step.
+CPI watches the outside world for your product — new research, competitor moves, industry
+news, community discussion, funding activity — and turns what it finds into a short, ranked
+list of ideas worth a look. Each idea comes with its evidence, pros and cons argued equally
+hard, and a small suggested next step (days of work, not months).
 
-**Generic by construction** — no domain logic in code. All product specificity lives in
-`context/pcm.yaml` (the Product Context Model) and `config/sources.yaml`. Swap those two
-files (or use `cpi init`) and the pipeline re-targets to a different product.
+**How it stays relevant to *your* product:** you describe the product once in a plain YAML
+file (`context/pcm.yaml`) — what it does, who it's for, what you will never build. Everything
+is filtered and scored against that description. The code knows nothing about any particular
+product or industry, so the same pipeline works for a database tool, a trading system, or a
+bakery chain: change the file, not the code.
 
-**Hybrid by default** — AI agents do the exhaustive collection and first-pass triage; humans own
-scoring calibration, kill decisions, and the final recommendation.
+**Who does what:** the AI reads everything and makes the first pass — collecting, filtering,
+drafting scores. You make every call that matters: adjusting scores, auditing what got
+filtered out, and deciding what to pursue, park, or kill. No decision is automated.
 
 ![The CPI flow: init, ground, run](docs/cpi-flow.gif)
 
