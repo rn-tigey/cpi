@@ -15,6 +15,11 @@ bakery chain: change the file, not the code.
 drafting scores. You make every call that matters: adjusting scores, auditing what got
 filtered out, and deciding what to pursue, park, or kill. No decision is automated.
 
+**What it takes:** one sitting from install to your first ranked brief — describe your
+product in one file, then `cpi run`. After that, the whole routine is a monthly run plus a
+short review. A full cycle has cost well under $1 in API usage at pilot volume (keyless demo
+mode included if you just want to look around).
+
 ![The CPI flow: init, ground, run](docs/cpi-flow.gif)
 
 Read more: [White Paper](docs/white-paper.md) (the framework) ·
