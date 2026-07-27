@@ -33,8 +33,9 @@ def init(dest: Path = typer.Option(..., help="Folder to initialize for a new pro
     for d in ("data", "briefs"):
         (dest / d).mkdir(exist_ok=True)
     typer.echo(f"Initialized CPI home at {dest}")
-    typer.echo(f"1) Edit {target_pcm} for the new product")
-    typer.echo(f"2) Run with: set CPI_HOME={dest} (or export CPI_HOME={dest})")
+    typer.echo(f"1) Edit {target_pcm} for the new product (or draft it: cpi draft-pcm --docs ...)")
+    typer.echo(f"2) Set CPI_HOME={dest} (set/export)")
+    typer.echo("3) Then: cpi ground && cpi run   # first ranked brief in one sitting")
 
 
 @app.command("draft-pcm")
@@ -62,7 +63,7 @@ def ground(force: bool = typer.Option(False, help="Overwrite an existing config/
 
     path = ground_mod.run(force=force)
     typer.echo(f"Search criteria written: {path}")
-    typer.echo("Review/edit that file, then run: cpi scan")
+    typer.echo("Review/edit that file, then run: cpi run")
 
 
 @app.command()
