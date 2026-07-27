@@ -119,19 +119,22 @@ schtasks /Create /TN "CPI monthly"       /SC MONTHLY /D 1  /ST 08:00 /TR "cmd /c
 Spot-checks, `review-scores`, `brief`, `decide`, and `calibrate` are deliberately **manual** —
 they are the human half of the hybrid.
 
-## First eight weeks (runbook)
+## From day one to a routine
 
-1. **Week 1 — Ground.** Author `context/pcm.yaml` from the template. Get the non-goals and
-   watch themes right — they are the filter's teeth. Log edits in `context/pcm_changelog.md`.
-   Configure `config/sources.yaml` feeds for your market.
-2. **Weeks 1–4 — Scan + triage daily.** `cpi scan --source arxiv,hn && cpi triage`. Expect
-   dozens-to-hundreds of signals/week; triage should advance only 10–20.
-3. **Weekly — keep the filter honest.** `cpi spot-check` (5 discards, ~10 minutes). Reversals
-   are logged automatically and sharpen the triage prompt at calibration.
-4. **Week 4 — first assess pass.** `cpi cluster && cpi score && cpi review-scores`. Adjust
-   scores freely — your deltas are the calibration data.
-5. **Week 8 — first brief.** `cpi brief`, hold the 45-minute review, record every disposition
-   with `cpi decide`. Two briefs in, run the first `cpi calibrate`.
+**Day 1 — your first brief.** Describe the product in `context/pcm.yaml` (or draft it with
+`cpi draft-pcm`), run `cpi ground`, then `cpi run`. You'll be reading a ranked brief the same
+sitting. Expect it to be rough — it's built from a single scan and a filter you haven't
+corrected yet. Judge the potential, not the polish.
+
+**Monthly — the working rhythm.** Run a cycle (`cpi run`), adjust the drafted scores
+(`cpi review-scores`), and record a fund/park/kill decision for each idea (`cpi decide`).
+Between cycles, two optional habits make the briefs noticeably better: automate the daily
+scan+triage (see Scheduling) so signals accumulate instead of arriving in one batch, and run
+an occasional `cpi spot-check` so someone audits what the filter throws away.
+
+**Quarterly — let it learn.** `cpi calibrate` turns your score corrections, spot-check
+reversals, and decisions into sharper triage and better-calibrated drafts. This is when the
+loop starts compounding — each cycle slightly better than the last.
 
 ## Layout
 
