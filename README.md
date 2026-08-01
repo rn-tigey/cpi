@@ -38,6 +38,10 @@ pip install -e ".[dev]"
 #   export CPI_DRY_RUN=1                        (deterministic canned LLM outputs)
 ```
 
+Windows PowerShell note: `cpi` is a built-in PowerShell alias for `Copy-Item`, which shadows
+this CLI. Either call `cpi.exe`, or remove the alias for your session with `Remove-Item Alias:cpi`
+(add it to your PowerShell profile to make that permanent).
+
 Models used: `claude-haiku-4-5` for volume tasks (summaries, triage), `claude-opus-4-8` for
 judgment tasks (scoring, briefs, calibration). The per-task model map lives in `cpi/llm.py` —
 edit it there to use different models. All calls go through that one wrapper; token usage is
