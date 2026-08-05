@@ -74,6 +74,11 @@ digest/roundup feeds to also collect the primary sources they link to; tune idea
 with `cpi cluster --threshold`. Quarterly, `cpi calibrate` includes a per-source scorecard
 and flags sources that never produce advanced signals.
 
+Clustering quality: when an `OPENAI_API_KEY` is set, signals are grouped by meaning
+(embeddings, `text-embedding-3-small`, fractions of a cent per cycle) instead of word
+overlap — in our tests this roughly halved the number of fragmented one-signal ideas.
+Without a key (or in dry-run) clustering falls back to TF-IDF and everything still works.
+
 The cadences above are recommendations, not constraints — run any stage as often as fits your
 team. `cpi brief --month` accepts any period label (e.g. `2026-W30` for a weekly brief); each
 label gets its own brief file, and ideas already delivered under an earlier label are

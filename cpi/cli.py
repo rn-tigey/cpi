@@ -180,7 +180,8 @@ def spot_check(n: int = typer.Option(5, help="Sample size from the discard pile"
 @app.command()
 def cluster(threshold: Optional[float] = typer.Option(
         None, min=0.0, max=2.0,
-        help="Cosine distance threshold (default 0.8). Higher merges more aggressively.")):
+        help="Cosine distance threshold (default: 0.6 with embeddings, 0.8 TF-IDF). "
+             "Higher merges more aggressively.")):
     """Stage 4a - group advanced signals into candidate ideas."""
     from .pipeline import cluster as cluster_mod
 
