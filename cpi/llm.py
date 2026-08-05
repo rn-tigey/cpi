@@ -1,6 +1,7 @@
 """Single LLM wrapper. Every CPI model call goes through here.
 
-- Per-task model selection (Haiku for volume tasks, Opus for judgment tasks)
+- Per-task model selection (cheap model for volume tasks, strong model for judgment tasks)
+- Providers: Anthropic (default) or OpenAI - see provider() for how one is chosen
 - Prompt templates loaded from prompts/<task>.md (editable without code changes)
 - Token usage logged to data/llm_usage.jsonl
 - CPI_DRY_RUN=1 returns deterministic canned outputs (tests / keyless runs)
@@ -25,6 +26,17 @@ TASK_MODELS = {
     "draft_pcm": "claude-opus-4-8",
 }
 
+# Used when the OpenAI provider is active. Same cheap/strong split; edit freely.
+TASK_MODELS_OPENAI = {
+    "summarize": "gpt-5-mini",
+    "triage": "gpt-5-mini",
+    "score": "gpt-5.1",
+    "brief": "gpt-5.1",
+    "calibrate": "gpt-5.1",
+    "ground": "gpt-5.1",
+    "draft_pcm": "gpt-5.1",
+}
+
 MAX_TOKENS = {
     "summarize": 1024,
     "triage": 1024,
@@ -36,10 +48,32 @@ MAX_TOKENS = {
 }
 
 _client = None
+_openai_client = None
 
 
 def dry_run() -> bool:
     return os.environ.get("CPI_DRY_RUN", "") == "1"
+
+
+def provider() -> str:
+    """'anthropic' (default) or 'openai'.
+
+    CPI_PROVIDER wins when set. Otherwise OpenAI is auto-selected only when
+    OPENAI_API_KEY is the sole key present - an Anthropic key always keeps
+    the default.
+    """
+    p = os.environ.get("CPI_PROVIDER", "").strip().lower()
+    if p:
+        if p not in ("anthropic", "openai"):
+            raise SystemExit(f"CPI_PROVIDER must be 'anthropic' or 'openai', not '{p}'")
+        return p
+    if os.environ.get("OPENAI_API_KEY") and not os.environ.get("ANTHROPIC_API_KEY"):
+        return "openai"
+    return "anthropic"
+
+
+def model_for(task: str) -> str:
+    return (TASK_MODELS_OPENAI if provider() == "openai" else TASK_MODELS)[task]
 
 
 def _get_client():
@@ -49,6 +83,18 @@ def _get_client():
 
         _client = anthropic.Anthropic()
     return _client
+
+
+def _get_openai_client():
+    global _openai_client
+    if _openai_client is None:
+        try:
+            from openai import OpenAI
+        except ImportError:
+            raise SystemExit("The OpenAI provider needs the 'openai' package: "
+                             "pip install \"cpi[openai]\" (or pip install openai)") from None
+        _openai_client = OpenAI()
+    return _openai_client
 
 
 def load_prompt(task: str, **vars) -> str:
@@ -68,8 +114,9 @@ def _log_usage(task: str, model: str, usage) -> None:
         "ts": datetime.now(timezone.utc).isoformat(),
         "task": task,
         "model": model,
-        "input_tokens": getattr(usage, "input_tokens", 0),
-        "output_tokens": getattr(usage, "output_tokens", 0),
+        # Anthropic names / OpenAI names
+        "input_tokens": getattr(usage, "input_tokens", None) or getattr(usage, "prompt_tokens", 0) or 0,
+        "output_tokens": getattr(usage, "output_tokens", None) or getattr(usage, "completion_tokens", 0) or 0,
     }
     with open(paths.llm_usage_file(), "a", encoding="utf-8") as f:
         f.write(json.dumps(rec) + "\n")
@@ -80,7 +127,13 @@ def complete(task: str, **vars) -> str:
     if dry_run():
         return _canned_text(task, vars)
     prompt = load_prompt(task, **vars)
-    model = TASK_MODELS[task]
+    model = model_for(task)
+    if provider() == "openai":
+        response = _get_openai_client().chat.completions.create(
+            model=model, max_completion_tokens=MAX_TOKENS[task],
+            messages=[{"role": "user", "content": prompt}])
+        _log_usage(task, model, response.usage)
+        return response.choices[0].message.content or ""
     client = _get_client()
     kwargs = dict(model=model, max_tokens=MAX_TOKENS[task],
                   messages=[{"role": "user", "content": prompt}])
@@ -97,7 +150,15 @@ def complete_json(task: str, schema: dict, **vars) -> dict:
     if dry_run():
         return _canned_json(task, vars)
     prompt = load_prompt(task, **vars)
-    model = TASK_MODELS[task]
+    model = model_for(task)
+    if provider() == "openai":
+        response = _get_openai_client().chat.completions.create(
+            model=model, max_completion_tokens=MAX_TOKENS[task],
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_schema",
+                             "json_schema": {"name": task, "strict": True, "schema": schema}})
+        _log_usage(task, model, response.usage)
+        return json.loads(response.choices[0].message.content)
     client = _get_client()
     kwargs = dict(
         model=model,

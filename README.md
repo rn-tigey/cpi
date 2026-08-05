@@ -32,8 +32,12 @@ Read more: [White Paper](docs/white-paper.md) (the framework) ·
 git clone https://github.com/rn-tigey/cpi.git && cd cpi
 pip install -e ".[dev]"
 
-# LLM access:
+# LLM access - Anthropic (default):
 #   export ANTHROPIC_API_KEY=sk-ant-...        (Windows: $env:ANTHROPIC_API_KEY = "sk-ant-...")
+# or OpenAI:
+#   pip install -e ".[openai]"
+#   export OPENAI_API_KEY=sk-...                (used automatically when it is the only key
+#                                                set; force with CPI_PROVIDER=openai)
 # Keyless / offline demo:
 #   export CPI_DRY_RUN=1                        (deterministic canned LLM outputs)
 ```
@@ -42,9 +46,10 @@ Windows PowerShell note: `cpi` is a built-in PowerShell alias for `Copy-Item`, w
 this CLI. Either call `cpi.exe`, or remove the alias for your session with `Remove-Item Alias:cpi`
 (add it to your PowerShell profile to make that permanent).
 
-Models used: `claude-haiku-4-5` for volume tasks (summaries, triage), `claude-opus-4-8` for
-judgment tasks (scoring, briefs, calibration). The per-task model map lives in `cpi/llm.py` —
-edit it there to use different models. All calls go through that one wrapper; token usage is
+Models used: a cheap model for volume tasks (summaries, triage) and a strong model for
+judgment tasks (scoring, briefs, calibration) — `claude-haiku-4-5` / `claude-opus-4-8` on
+Anthropic, `gpt-5-mini` / `gpt-5.1` on OpenAI. Both per-task model maps live in `cpi/llm.py` —
+edit them there to use different models. All calls go through that one wrapper; token usage is
 logged to `data/llm_usage.jsonl` (see totals in `cpi status`).
 
 ## The six stages → commands

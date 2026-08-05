@@ -13,10 +13,12 @@ pip install -e ".[dev]"
 pytest   # sanity check — runs keyless and offline
 ```
 
-Set your Anthropic key (or skip it and use dry-run mode to explore):
+Set your Anthropic or OpenAI key (or skip both and use dry-run mode to explore):
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...   # Windows: $env:ANTHROPIC_API_KEY = "sk-ant-..."
+# or OpenAI (needs the extra: pip install -e ".[openai]"):
+export OPENAI_API_KEY=sk-...          # auto-selected when it is the only key set
 # or, keyless demo mode with canned LLM outputs:
 export CPI_DRY_RUN=1
 ```

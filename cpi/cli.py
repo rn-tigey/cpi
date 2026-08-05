@@ -35,6 +35,8 @@ def init(dest: Path = typer.Option(..., help="Folder to initialize for a new pro
     typer.echo(f"Initialized CPI home at {dest}")
     typer.echo(f"1) Edit {target_pcm} for the new product (or draft it: cpi draft-pcm --docs ...)")
     typer.echo(f"2) Set CPI_HOME={dest} (set/export)")
+    typer.echo("   and an LLM key: ANTHROPIC_API_KEY or OPENAI_API_KEY "
+               "(or CPI_DRY_RUN=1 for a keyless demo)")
     typer.echo("3) Then: cpi ground && cpi run   # first ranked brief in one sitting")
 
 
