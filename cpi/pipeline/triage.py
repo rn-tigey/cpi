@@ -40,7 +40,7 @@ def triage_signal(signal: SignalRecord, pcm_block: str) -> TriageResult:
         confidence=max(0.0, min(1.0, float(out["confidence"]))),
         re_review_trigger=trigger,
         triaged_at=datetime.now(timezone.utc),
-        model="dry-run" if llm.dry_run() else llm.TASK_MODELS["triage"],
+        model="dry-run" if llm.dry_run() else llm.model_for("triage"),
     )
 
 

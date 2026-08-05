@@ -47,7 +47,7 @@ def run(rescore: bool = False) -> int:
         if idea.draft_scores is not None and not rescore:
             continue
         idea.draft_scores = draft_scores(idea, block)
-        idea.score_model = "dry-run" if llm.dry_run() else llm.TASK_MODELS["score"]
+        idea.score_model = "dry-run" if llm.dry_run() else llm.model_for("score")
         store.save_idea(idea)
         total = idea.draft_scores.weighted_total(store.load_weights())
         print(f"  {idea.id}  weighted={total}  {idea.title[:60]}")
