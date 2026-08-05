@@ -20,7 +20,7 @@ product in one file, then `cpi run`. After that, the whole routine is a monthly 
 short review. A full cycle has cost well under $1 in API usage at pilot volume (keyless demo
 mode included if you just want to look around).
 
-![The CPI flow: init, ground, run](docs/cpi-flow.gif)
+![The CPI flow: init, ground, run](docs/cpi-flow-v2.gif)
 
 Read more: [White Paper](docs/white-paper.md) (the framework) ·
 [Technical Paper](docs/technical-paper.md) (this implementation) ·

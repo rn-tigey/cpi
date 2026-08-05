@@ -35,9 +35,14 @@ data/** (gitignored) · briefs/ · tests/
 
 ## 3 · LLM layer
 
-- **Single wrapper** (`llm.py`) — every call goes through it. Per-task model split:
-  `claude-haiku-4-5` for volume tasks (summarize, triage), `claude-opus-4-8` with adaptive
-  thinking for judgment tasks (score, brief, calibrate, ground, draft-pcm). Per-task `max_tokens`.
+- **Single wrapper** (`llm.py`) — every call goes through it. Per-task model split: a cheap
+  model for volume tasks (summarize, triage), a strong model for judgment tasks (score, brief,
+  calibrate, ground, draft-pcm). Per-task `max_tokens`.
+- **Two providers** — Anthropic (`claude-haiku-4-5` / `claude-opus-4-8` with adaptive thinking,
+  the default) or OpenAI (`gpt-5-mini` / `gpt-5.1`, strict `json_schema` mode). `CPI_PROVIDER`
+  selects explicitly; otherwise OpenAI is auto-selected only when `OPENAI_API_KEY` is the sole
+  key present. In a 9-idea head-to-head on identical inputs, both produced usable briefs and
+  agreed on the top-ranked idea.
 - **Structured outputs** — triage and scoring use schema-constrained JSON output, so
   dispositions and scores cannot come back malformed; no regex-parsing of free text.
 - **Prompts are files** (`prompts/*.md`, `string.Template`) — editable without code changes.
@@ -61,9 +66,10 @@ data/** (gitignored) · briefs/ · tests/
 
 ## 5 · Testing & operations
 
-Eight pytest files (38 tests at this writing): PCM schema validation, normalization/dedupe,
+Twelve pytest files (50 tests at this writing): PCM schema validation, normalization/dedupe,
 scoring math, brief validation (section presence + pros/cons ratio), search-criteria generation,
-PCM drafting, the Crossref scanner, scan health/scorecard/link-expansion behaviors, and an
+PCM drafting, the Crossref scanner, scan health/scorecard/link-expansion behaviors, LLM provider
+selection, embedding clustering with TF-IDF fallback, the one-shot `cpi run` command, and an
 end-to-end pipeline dry-run. Network calls are mocked; LLM in dry-run — the suite runs keyless
 and offline. Cadences: scan+triage daily (cron/schtasks examples shipped), Crossref+RSS
 weekly, funding + parked-rescore + cluster + score monthly; the judgment commands stay
